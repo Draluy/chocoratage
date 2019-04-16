@@ -8,11 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 public class KeyLogger implements NativeKeyListener {
-
-    Logger logger = LoggerFactory.getLogger(KeyLogger.class);
 
     private Set<Runnable> chocoListeners = new HashSet<>();
     private CircularBuffer circularBuffer = new CircularBuffer();
@@ -23,8 +22,8 @@ public class KeyLogger implements NativeKeyListener {
             GlobalScreen.addNativeKeyListener(this);
         } catch (NativeHookException e) {
             String errMsg = "Impossible to register listening hook";
-            logger.error(errMsg, e);
-            throw new ChocoratageException(errMsg);
+            System.out.println(errMsg);
+            throw new ChocoratageException(errMsg, e);
         }
     }
 
@@ -35,17 +34,26 @@ public class KeyLogger implements NativeKeyListener {
 
     @Override
     public void nativeKeyPressed(NativeKeyEvent nativeKeyEvent) {
-        if (nativeKeyEvent.isActionKey()){
-            return;
-        }
 
-        circularBuffer.add(nativeKeyEvent.getKeyText(nativeKeyEvent.getKeyCode()));
+        getKeyTextIfNiceKey(nativeKeyEvent)
+                .ifPresent(key -> circularBuffer.add(key));
 
         if (circularBuffer.contains(ForbiddenWords.words)){
             circularBuffer.clear();
             chocoListeners.stream().forEach(runnable -> runnable.run());
         }
+    }
 
+    public Optional<String> getKeyTextIfNiceKey(NativeKeyEvent nativeKeyEvent) {
+        if (nativeKeyEvent == null || nativeKeyEvent.isActionKey()){
+            return Optional.empty();
+        }
+        String keyText = nativeKeyEvent.getKeyText(nativeKeyEvent.getKeyCode());
+        if(keyText != null && keyText.length() == 1){
+            return Optional.of(keyText);
+        }else {
+            return Optional.empty();
+        }
     }
 
     @Override

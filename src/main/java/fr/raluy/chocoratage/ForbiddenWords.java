@@ -1,6 +1,5 @@
 package fr.raluy.chocoratage;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
