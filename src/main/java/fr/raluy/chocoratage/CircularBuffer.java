@@ -18,24 +18,27 @@ public class CircularBuffer {
         }
 
         if (ch.equals("Backspace")) {
-            buffer = buffer.substring(0, buffer.length()-1);
+            buffer = buffer.substring(0, buffer.length() - 1);
         } else {
             buffer = buffer + ch;
         }
 
         if (buffer.length() > MAX_SIZE) {
-            buffer = buffer.substring(1);
+            buffer = buffer.substring(ch.length());
         }
-
-        System.out.println("BUFFER"+ buffer);
     }
 
-    public boolean contains(List<String> strings) {
+    public boolean containsUppercase(List<String> strings) {
         return strings.stream()
                 .anyMatch(s -> buffer.contains(s.toUpperCase()));
     }
 
-     public void clear (){
-         buffer = "";
-     }
+    public void clear() {
+        buffer = "";
+    }
+
+    @Override
+    public String toString() {
+        return buffer;
+    }
 }

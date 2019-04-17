@@ -15,4 +15,5 @@ dependencies {
     implementation 'com.1stleg:jnativehook:2.1.0'
     compile 'org.slf4j:slf4j-api:1.7.25'
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile 'org.assertj:assertj-core:3.8.0'
 }

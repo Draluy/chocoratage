@@ -4,8 +4,6 @@ import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 import org.jnativehook.keyboard.NativeKeyEvent;
 import org.jnativehook.keyboard.NativeKeyListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -38,7 +36,7 @@ public class KeyLogger implements NativeKeyListener {
         getKeyTextIfNiceKey(nativeKeyEvent)
                 .ifPresent(key -> circularBuffer.add(key));
 
-        if (circularBuffer.contains(ForbiddenWords.words)){
+        if (circularBuffer.containsUppercase(ForbiddenWords.words)){
             circularBuffer.clear();
             chocoListeners.stream().forEach(runnable -> runnable.run());
         }

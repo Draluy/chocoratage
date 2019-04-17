@@ -4,5 +4,5 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ForbiddenWords {
-    public static List<String> words = Arrays.asList("chocolatine", "pains au chocolat", "pain au chocolat", "croissant", "viennoiserie");
+    public static List<String> words = Arrays.asList("choco", "pains au chocolat", "pain au chocolat", "croissant", "viennoiserie", "petit dej");
 }
