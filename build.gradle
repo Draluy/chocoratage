@@ -9,6 +9,7 @@ jar {
     from {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
+    jar.archiveName = 'chocoratage.jar'
 }
 
 group 'fr.raluy'
