@@ -9,19 +9,21 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class CircularBufferTest {
     CircularBuffer circularBuffer = new CircularBuffer();
 
     @Test
     public void shouldBeEmptyAtFirst() throws Exception {
-        Assertions.assertThat(circularBuffer.toString()).isEqualTo("");
+        assertThat(circularBuffer.toString()).isEqualTo("");
     }
 
     @Test
     public void shouldAddStringToEmptyBuffer() throws Exception {
         addStringToBuffer("test");
 
-        Assertions.assertThat(circularBuffer.toString()).isEqualTo("TEST");
+        assertThat(circularBuffer.toString()).isEqualTo("TEST");
     }
 
     @Test
@@ -29,7 +31,7 @@ public class CircularBufferTest {
         addStringToBuffer("test ");
         addStringToBuffer("have");
 
-        Assertions.assertThat(circularBuffer.toString()).isEqualTo("TEST HAVE");
+        assertThat(circularBuffer.toString()).isEqualTo("TEST HAVE");
     }
 
     @Test
@@ -37,15 +39,15 @@ public class CircularBufferTest {
         addStringToBuffer("test");
         circularBuffer.add(null);
 
-        Assertions.assertThat(circularBuffer.toString()).isEqualTo("TEST");
+        assertThat(circularBuffer.toString()).isEqualTo("TEST");
     }
 
     @Test
     public void shouldAllow100Chars() throws Exception {
         addStringToBuffer("thislineisonehundredcharacterslongbelieveitornotthislineisonehundredcharacterslongbelieveitornot1234 ");
 
-        Assertions.assertThat(circularBuffer.toString()).hasSize(100);
-        Assertions.assertThat(circularBuffer.toString()).isEqualTo("THISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOTTHISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOT1234");
+        assertThat(circularBuffer.toString()).hasSize(100);
+        assertThat(circularBuffer.toString()).isEqualTo("THISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOTTHISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOT1234");
     }
 
     @Test
@@ -53,8 +55,8 @@ public class CircularBufferTest {
         addStringToBuffer("thislineisonehundredcharacterslongbelieveitornotthislineisonehundredcharacterslongbelieveitornot1234;");
         addStringToBuffer("replacement");
 
-        Assertions.assertThat(circularBuffer.toString()).hasSize(112);
-        Assertions.assertThat(circularBuffer.toString()).isEqualTo("THISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOTTHISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOT1234 REPLACEMENT");
+        assertThat(circularBuffer.toString()).hasSize(112);
+        assertThat(circularBuffer.toString()).isEqualTo("THISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOTTHISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOT1234 REPLACEMENT");
     }
 
 
@@ -64,13 +66,13 @@ public class CircularBufferTest {
         addStringToBuffer("1234");
 
         boolean result = circularBuffer.containsUppercase(Arrays.asList("hundred"));
-        Assertions.assertThat(result).isTrue();
+        assertThat(result).isTrue();
 
         result = circularBuffer.containsUppercase(Arrays.asList("1234"));
-        Assertions.assertThat(result).isTrue();
+        assertThat(result).isTrue();
 
         result = circularBuffer.containsUppercase(Arrays.asList("thisline"));
-        Assertions.assertThat(result).isTrue();
+        assertThat(result).isTrue();
     }
 
     @Test
@@ -78,7 +80,7 @@ public class CircularBufferTest {
         addStringToBuffer("thislineisonehundredcharacterslongbelieveitornotthislineisonehundredcharacterslongbelieveitornot1234");
 
         boolean result = circularBuffer.containsUppercase(Arrays.asList("eleven"));
-        Assertions.assertThat(result).isFalse();
+        assertThat(result).isFalse();
     }
 
     @Test
@@ -90,7 +92,7 @@ public class CircularBufferTest {
         addStringToBuffer(":");
         addStringToBuffer("add");
 
-        Assertions.assertThat(circularBuffer.toString()).isEqualTo("REPLACEMENT ADD");
+        assertThat(circularBuffer.toString()).isEqualTo("REPLACEMENT ADD");
     }
 
     @Test
@@ -100,7 +102,7 @@ public class CircularBufferTest {
         addStringToBuffer("road ");
         addStringToBuffer("add");
 
-        Assertions.assertThat(circularBuffer.toString()).isEqualTo("ROAD ADD");
+        assertThat(circularBuffer.toString()).isEqualTo("ROAD ADD");
     }
 
     @Test
@@ -109,8 +111,19 @@ public class CircularBufferTest {
 
         circularBuffer.clear();
 
-        Assertions.assertThat(circularBuffer.toString()).isEmpty();
+        assertThat(circularBuffer.toString()).isEmpty();
     }
+
+    @Test
+    public void shouldMatchApproiximateWoords() {
+        addStringToBuffer("choKo ");
+        addStringToBuffer("croissanst");
+
+        assertThat(circularBuffer.containsUppercase(Arrays.asList("choco"))).isTrue();
+        assertThat(circularBuffer.containsUppercase(Arrays.asList("croissants"))).isTrue();
+        assertThat(circularBuffer.containsUppercase(Arrays.asList("decroissants"))).isFalse();
+    }
+
 
     private void addStringToBuffer(String str) {
         for (int i = 0; i < str.length(); i++) {

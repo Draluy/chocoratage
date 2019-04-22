@@ -55,7 +55,10 @@ public class CircularBuffer {
 
     public boolean containsUppercase(List<String> strings) {
         return strings.stream()
-                .anyMatch(s -> previous.contains(s.toUpperCase()) || current.contains(s.toUpperCase()));
+                .anyMatch(s -> {
+                    return Levenshtein.isThisSimilarEnoughToThat(s.toUpperCase(), previous)
+                            || Levenshtein.isThisSimilarEnoughToThat(s.toUpperCase(), current);
+                });
     }
 
     public void clear() {
