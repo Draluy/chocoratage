@@ -14,7 +14,7 @@ public class KeyLogger implements NativeKeyListener {
     private Set<Runnable> chocoListeners = new HashSet<>();
     private CircularBuffer circularBuffer = new CircularBuffer();
 
-    public KeyLogger()  {
+    public KeyLogger() {
         try {
             GlobalScreen.registerNativeHook();
             GlobalScreen.addNativeKeyListener(this);
@@ -33,25 +33,20 @@ public class KeyLogger implements NativeKeyListener {
     @Override
     public void nativeKeyPressed(NativeKeyEvent nativeKeyEvent) {
 
-        getKeyTextIfNiceKey(nativeKeyEvent)
-                .ifPresent(key -> circularBuffer.add(key));
+        getIfNiceKey(nativeKeyEvent)
+                .ifPresent(keyEvent -> circularBuffer.add(keyEvent));
 
-        if (circularBuffer.containsUppercase(ForbiddenWords.words)){
+        if (circularBuffer.containsUppercase(ForbiddenWords.words)) {
             circularBuffer.clear();
             chocoListeners.stream().forEach(runnable -> runnable.run());
         }
     }
 
-    public Optional<String> getKeyTextIfNiceKey(NativeKeyEvent nativeKeyEvent) {
-        if (nativeKeyEvent == null || nativeKeyEvent.isActionKey()){
+    public Optional<NativeKeyEvent> getIfNiceKey(NativeKeyEvent nativeKeyEvent) {
+        if (nativeKeyEvent == null || nativeKeyEvent.isActionKey()) {
             return Optional.empty();
         }
-        String keyText = nativeKeyEvent.getKeyText(nativeKeyEvent.getKeyCode());
-        if(keyText != null && keyText.length() == 1){
-            return Optional.of(keyText);
-        }else {
-            return Optional.empty();
-        }
+        return Optional.of(nativeKeyEvent);
     }
 
     @Override

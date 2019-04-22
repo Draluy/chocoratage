@@ -1,5 +1,7 @@
 package fr.raluy.chocoratage;
 
+import org.jnativehook.keyboard.NativeKeyEvent;
+
 import java.util.List;
 
 public class CircularBuffer {
@@ -10,21 +12,22 @@ public class CircularBuffer {
      * Adds a char at the end of the string, and evicts first chars of the string to
      * reduce the string to a maximum of MAX_SIZE characters
      *
-     * @param ch the char to append to the end
+     * @param keyEvent the char to append to the end
      */
-    public void add(String ch) {
-        if (ch == null) {
+    public void add(NativeKeyEvent keyEvent) {
+        if (keyEvent == null ){
             return;
         }
 
-        if (ch.equals("Backspace")) {
+        if (keyEvent.equals(NativeKeyEvent.VC_DELETE)) {
             buffer = buffer.substring(0, buffer.length() - 1);
         } else {
-            buffer = buffer + ch;
+            buffer = buffer + keyEvent.getKeyText(keyEvent.getKeyCode());
         }
 
         if (buffer.length() > MAX_SIZE) {
-            buffer = buffer.substring(ch.length());
+            //cut the buffer back to MAX_SIZE chars
+            buffer = buffer.substring(buffer.length() - MAX_SIZE, buffer.length());
         }
     }
 
