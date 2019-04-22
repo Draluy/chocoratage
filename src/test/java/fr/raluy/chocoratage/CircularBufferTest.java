@@ -52,26 +52,23 @@ public class CircularBufferTest {
 
     @Test
     public void shouldReplaceEndingCharsWhenFull() throws Exception {
-        addStringToBuffer("thislineisonehundredcharacterslongbelieveitornotthislineisonehundredcharacterslongbelieveitornot1234;");
+        addStringToBuffer("thislineisonehundredcharacterslongbelieveitornotthislineisonehundredcharacterslongbelieveitornot1234");
         addStringToBuffer("replacement");
 
-        assertThat(circularBuffer.toString()).hasSize(112);
-        assertThat(circularBuffer.toString()).isEqualTo("THISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOTTHISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOT1234 REPLACEMENT");
+        assertThat(circularBuffer.toString()).hasSize(100);
+        assertThat(circularBuffer.toString()).isEqualTo("NEHUNDREDCHARACTERSLONGBELIEVEITORNOTTHISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOT1234REPLACEMENT");
     }
 
 
     @Test
     public void testContains() throws Exception {
-        addStringToBuffer("THISLINEisoneHUNDREDcharacterslongbelieveitornotthislineisonehundredcharacterslongbelieveitornot ");
+        addStringToBuffer("HUNDRED ");
         addStringToBuffer("1234");
 
         boolean result = circularBuffer.containsUppercase(Arrays.asList("hundred"));
         assertThat(result).isTrue();
 
         result = circularBuffer.containsUppercase(Arrays.asList("1234"));
-        assertThat(result).isTrue();
-
-        result = circularBuffer.containsUppercase(Arrays.asList("thisline"));
         assertThat(result).isTrue();
     }
 
