@@ -13,7 +13,7 @@ public class CircularBufferTest {
     CircularBuffer circularBuffer = new CircularBuffer();
 
     @Test
-    public void shouldBeEMptyAtFirst() throws Exception {
+    public void shouldBeEmptyAtFirst() throws Exception {
         Assertions.assertThat(circularBuffer.toString()).isEqualTo("");
     }
 
@@ -26,10 +26,10 @@ public class CircularBufferTest {
 
     @Test
     public void shouldAddStringToBuffer() throws Exception {
-        addStringToBuffer("test");
+        addStringToBuffer("test ");
         addStringToBuffer("have");
 
-        Assertions.assertThat(circularBuffer.toString()).isEqualTo("TESTHAVE");
+        Assertions.assertThat(circularBuffer.toString()).isEqualTo("TEST HAVE");
     }
 
     @Test
@@ -42,7 +42,7 @@ public class CircularBufferTest {
 
     @Test
     public void shouldAllow100Chars() throws Exception {
-        addStringToBuffer("thislineisonehundredcharacterslongbelieveitornotthislineisonehundredcharacterslongbelieveitornot1234");
+        addStringToBuffer("thislineisonehundredcharacterslongbelieveitornotthislineisonehundredcharacterslongbelieveitornot1234 ");
 
         Assertions.assertThat(circularBuffer.toString()).hasSize(100);
         Assertions.assertThat(circularBuffer.toString()).isEqualTo("THISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOTTHISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOT1234");
@@ -50,17 +50,18 @@ public class CircularBufferTest {
 
     @Test
     public void shouldReplaceEndingCharsWhenFull() throws Exception {
-        addStringToBuffer("thislineisonehundredcharacterslongbelieveitornotthislineisonehundredcharacterslongbelieveitornot1234");
+        addStringToBuffer("thislineisonehundredcharacterslongbelieveitornotthislineisonehundredcharacterslongbelieveitornot1234;");
         addStringToBuffer("replacement");
 
-        Assertions.assertThat(circularBuffer.toString()).hasSize(100);
-        Assertions.assertThat(circularBuffer.toString()).isEqualTo("NEHUNDREDCHARACTERSLONGBELIEVEITORNOTTHISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOT1234REPLACEMENT");
+        Assertions.assertThat(circularBuffer.toString()).hasSize(112);
+        Assertions.assertThat(circularBuffer.toString()).isEqualTo("THISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOTTHISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOT1234 REPLACEMENT");
     }
 
 
     @Test
     public void testContains() throws Exception {
-        addStringToBuffer("THISLINEisoneHUNDREDcharacterslongbelieveitornotthislineisonehundredcharacterslongbelieveitornot1234");
+        addStringToBuffer("THISLINEisoneHUNDREDcharacterslongbelieveitornotthislineisonehundredcharacterslongbelieveitornot ");
+        addStringToBuffer("1234");
 
         boolean result = circularBuffer.containsUppercase(Arrays.asList("hundred"));
         Assertions.assertThat(result).isTrue();
@@ -80,6 +81,27 @@ public class CircularBufferTest {
         Assertions.assertThat(result).isFalse();
     }
 
+    @Test
+    public void testAddingSeveralSpacesShouldNotReplaceWords() throws Exception {
+        addStringToBuffer("replacement ");
+        addStringToBuffer(" ");
+        addStringToBuffer(";");
+        addStringToBuffer(" ");
+        addStringToBuffer(":");
+        addStringToBuffer("add");
+
+        Assertions.assertThat(circularBuffer.toString()).isEqualTo("REPLACEMENT ADD");
+    }
+
+    @Test
+    public void wordsShouldReplaceEachOther() throws Exception {
+        addStringToBuffer("replacement ");
+        addStringToBuffer("bunny ");
+        addStringToBuffer("road ");
+        addStringToBuffer("add");
+
+        Assertions.assertThat(circularBuffer.toString()).isEqualTo("ROAD ADD");
+    }
 
     @Test
     public void testClear() throws Exception {
@@ -90,15 +112,15 @@ public class CircularBufferTest {
         Assertions.assertThat(circularBuffer.toString()).isEmpty();
     }
 
-    private void addStringToBuffer (String str) {
+    private void addStringToBuffer(String str) {
         for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i); //magic offset
             circularBuffer.add(createNativeKeyEvent(c));
         }
     }
 
-    private void addNChars (int n){
-        IntStream.range(0,n)
+    private void addNChars(int n) {
+        IntStream.range(0, n)
                 .forEach(i -> circularBuffer.add(createNativeKeyEvent(NativeKeyEvent.VC_A)));
     }
 
@@ -113,9 +135,9 @@ public class CircularBufferTest {
     }
 
 
-    private NativeKeyEvent createNativeKeyEvent(char c)  {
+    private NativeKeyEvent createNativeKeyEvent(char c) {
         try {
-            Field field = NativeKeyEvent.class.getField("VC_" + Character.toUpperCase(c));
+            Field field = getFieldFromChar(c);
             return new NativeKeyEvent(
                     NativeKeyEvent.NATIVE_KEY_PRESSED,
                     0x00,        // Modifiers
@@ -127,6 +149,23 @@ public class CircularBufferTest {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private Field getFieldFromChar(char c) throws NoSuchFieldException {
+        char uc = Character.toUpperCase(c);
+        String strToAdd = uc + "";
+        if (uc == ' ') {
+            strToAdd = "SPACE";
+        }
+        if (uc == ';') {
+            strToAdd = "SEMICOLON";
+        }
+        if (uc == ':') {
+            strToAdd = "COMMA";
+        }
+
+        return NativeKeyEvent.class.getField("VC_" + strToAdd);
+
     }
 
 
