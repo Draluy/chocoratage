@@ -26,7 +26,7 @@ public class CircularBuffer {
             String keyText = keyEvent.getKeyText(keyEvent.getKeyCode());
             current = current + keyText;
         } else {
-            if (!current.isEmpty()){
+            if (!current.isEmpty()) {
                 previous = current;
                 current = "";
             }
@@ -55,10 +55,8 @@ public class CircularBuffer {
 
     public boolean containsUppercase(List<String> strings) {
         return strings.stream()
-                .anyMatch(s -> {
-                    return Levenshtein.isThisSimilarEnoughToThat(s.toUpperCase(), previous)
-                            || Levenshtein.isThisSimilarEnoughToThat(s.toUpperCase(), current);
-                });
+                .anyMatch(s -> Levenshtein.isThisSimilarEnoughToThat(s.toUpperCase(), previous)
+                        || Levenshtein.isThisSimilarEnoughToThat(s.toUpperCase(), current));
     }
 
     public void clear() {
@@ -69,7 +67,7 @@ public class CircularBuffer {
     @Override
     public String toString() {
         return Stream.of(previous, current)
-                .filter(s->!s.isEmpty())
+                .filter(s -> !s.isEmpty())
                 .collect(Collectors.joining(" "));
     }
 }

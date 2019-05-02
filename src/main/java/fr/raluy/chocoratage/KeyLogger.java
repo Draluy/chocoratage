@@ -37,12 +37,17 @@ public class KeyLogger implements NativeKeyListener {
                 .ifPresent(keyEvent -> circularBuffer.add(keyEvent));
 
         if (circularBuffer.containsUppercase(ForbiddenWords.words)) {
+
+            if (Config.isDebugMode()) {
+                System.out.println("Buffer state = " + circularBuffer.toString());
+            }
+
             circularBuffer.clear();
             chocoListeners.stream().forEach(runnable -> runnable.run());
         }
     }
 
-    public Optional<NativeKeyEvent> getIfNiceKey(NativeKeyEvent nativeKeyEvent) {
+    private Optional<NativeKeyEvent> getIfNiceKey(NativeKeyEvent nativeKeyEvent) {
         if (nativeKeyEvent == null || nativeKeyEvent.isActionKey()) {
             return Optional.empty();
         }

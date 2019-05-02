@@ -8,29 +8,31 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public enum Os {
-    LINUX(() -> Arrays.asList(KeyEvent.VK_CONTROL, KeyEvent.VK_ALT, KeyEvent.VK_L)),
-    WINDOWS(() -> Arrays.asList(KeyEvent.VK_WINDOWS, KeyEvent.VK_L)),
-    MAC(() -> Collections.emptyList()), //TODO: add keys for mac
-    UNKNOWN(() -> Collections.emptyList());
+    LINUX(Arrays.asList(KeyEvent.VK_CONTROL, KeyEvent.VK_ALT, KeyEvent.VK_L)),
+    WINDOWS(Arrays.asList(KeyEvent.VK_WINDOWS, KeyEvent.VK_L)),
+    MAC(Collections.emptyList()), //TODO: add keys for mac
+    UNKNOWN(Collections.emptyList());
 
-    private Supplier<List<Integer>> lockingKeys;
+    private List<Integer> lockingKeys;
 
-    Os(Supplier<List<Integer>> lockingKeys) {
+    Os(List<Integer> lockingKeys) {
         this.lockingKeys = lockingKeys;
     }
 
     public void lockSession() {
         try {
             Robot robot = new Robot();
-            lockingKeys.get()
-                    .forEach(key -> robot.keyPress(key));
+            lockingKeys.forEach(key -> robot.keyPress(key));
 
-            Thread.sleep(100);
+            Thread.sleep(500);
 
-            lockingKeys.get()
-                    .forEach(key -> robot.keyRelease(key));
+            lockingKeys.forEach(key -> robot.keyRelease(key));
         } catch (AWTException | InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<Integer> getLockingKeys() {
+        return lockingKeys;
     }
 }
