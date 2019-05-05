@@ -14,13 +14,9 @@ public class SessionLocker implements Runnable {
         Os platform = OsDetector.platform();
 
         if (Config.isDebugMode()) {
-            System.out.println("Keys pressed = " + serializeIntegers(platform.getLockingKeys()));
+            System.out.println(platform.name() + " detected. Session locked.");
         }
 
-        platform.lockSession();
-    }
-
-    private String serializeIntegers(List<Integer> ints) {
-        return ints.stream().map(i -> KeyEvent.getKeyText(i)).collect(Collectors.joining("+"));
+        platform.getLockFunction().run();
     }
 }
