@@ -43,14 +43,11 @@ public class CircularBuffer {
             return false;
         }
 
-        String keyText = keyEvent.getKeyText(keyEvent.getKeyCode());
+        String keyText = NativeKeyEvent.getKeyText(keyEvent.getKeyCode());
 
         if (keyText.length() > 1) {
             return false;
-        } else if (keyText.matches("[a-zA-Z0-9]+")) {
-            return true;
-        }
-        return false;
+        } else return keyText.matches("[a-zA-Z0-9]+");
     }
 
     public boolean containsUppercase(List<String> strings) {

@@ -11,8 +11,10 @@ import java.util.function.Supplier;
 public enum Os {
     LINUX(Os::lockLinuxKdeSession),
     WINDOWS(Os::lockWindowsSession),
-    MAC(() -> {}), //TODO: add keys for mac
-    UNKNOWN(() -> {});
+    MAC(() -> {
+    }), //TODO: add keys for mac
+    UNKNOWN(() -> {
+    });
 
     private Runnable lockFunction;
 
@@ -24,11 +26,11 @@ public enum Os {
         List<Integer> lockingKeys = Arrays.asList(KeyEvent.VK_CONTROL, KeyEvent.VK_ALT, KeyEvent.VK_L);
         try {
             Robot robot = new Robot();
-            lockingKeys.forEach(key -> robot.keyPress(key));
+            lockingKeys.forEach(robot::keyPress);
 
             Thread.sleep(100);
 
-            lockingKeys.forEach(key -> robot.keyRelease(key));
+            lockingKeys.forEach(robot::keyRelease);
         } catch (AWTException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -36,9 +38,9 @@ public enum Os {
 
     public static void lockWindowsSession() {
         try {
-            Runtime rt = Runtime.getRuntime();
-            Process pr = rt.exec("%windir%\\System32\\rundll32.exe user32.dll,LockWorkStation");
-            pr.waitFor();
+            ProcessBuilder processBuilder = new ProcessBuilder(System.getenv("windir") + "\\System32\\rundll32.exe", "user32.dll,LockWorkStation");
+            Process process = processBuilder.start();
+            process.waitFor();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

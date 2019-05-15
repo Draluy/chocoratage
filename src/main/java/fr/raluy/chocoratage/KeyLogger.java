@@ -43,7 +43,7 @@ public class KeyLogger implements NativeKeyListener {
             }
 
             circularBuffer.clear();
-            chocoListeners.stream().forEach(runnable -> runnable.run());
+            chocoListeners.forEach(Runnable::run);
         }
     }
 
