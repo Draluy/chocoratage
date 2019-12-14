@@ -1,22 +1,35 @@
 package fr.raluy.chocoratage;
 
-import fr.raluy.chocoratage.os.detection.Os;
-import fr.raluy.chocoratage.os.detection.OsDetector;
-
-import java.awt.event.KeyEvent;
-import java.util.List;
-import java.util.stream.Collectors;
+import static java.util.Objects.requireNonNull;
 
 public class SessionLocker implements Runnable {
 
+    private Os os;
+
+    public SessionLocker() {
+        this(Os.guess());
+        if (Config.isDebugMode()) {
+            System.out.println("Guessing OS");
+        }
+    }
+
+    public SessionLocker(Os os) {
+        this.os = requireNonNull(os, "OS must be specified.");
+        if (Config.isDebugMode()) {
+            System.out.printf("%s configured for %s\n", getClass().getSimpleName(), this.os.name());
+        }
+    }
+
     @Override
     public void run() {
-        Os platform = OsDetector.platform();
-
         if (Config.isDebugMode()) {
-            System.out.println(platform.name() + " detected. Session locked.");
+            System.out.printf("Running %s for %s\n", getClass().getSimpleName(), os.name());
         }
 
-        platform.getLockFunction().run();
+        if(Config.isSimulation()) {
+            System.out.println("lockSession() simulation!");
+        } else {
+            os.lockSession();
+        }
     }
 }
