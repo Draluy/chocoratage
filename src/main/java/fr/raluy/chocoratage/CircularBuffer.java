@@ -34,7 +34,7 @@ public class CircularBuffer {
 
         if (current.length() > MAX_SIZE) {
             //cut the buffer back to MAX_SIZE chars
-            current = current.substring(current.length() - MAX_SIZE, current.length());
+            current = current.substring(current.length() - MAX_SIZE);
         }
     }
 
@@ -47,13 +47,18 @@ public class CircularBuffer {
 
         if (keyText.length() > 1) {
             return false;
-        } else return keyText.matches("[a-zA-Z0-9]+");
+        } else return Character.isLetterOrDigit(keyText.codePointAt(0));
     }
 
     public boolean containsUppercase(List<String> strings) {
-        return strings.stream()
-                .anyMatch(s -> Levenshtein.isThisSimilarEnoughToThat(s.toUpperCase(), previous)
-                        || Levenshtein.isThisSimilarEnoughToThat(s.toUpperCase(), current));
+        Stream<String> upStrings = strings.stream().map(String::toUpperCase);
+        if(Config.isRelax()) { // TODO use predicate
+            return upStrings
+                    .anyMatch(s -> Levenshtein.isThisSimilarEnoughToThat(s.toUpperCase(), previous)
+                            || Levenshtein.isThisSimilarEnoughToThat(s.toUpperCase(), current));
+        } else {
+            return upStrings.anyMatch(s -> s.equals(previous) || s.equals(current));
+        }
     }
 
     public void clear() {
@@ -65,6 +70,6 @@ public class CircularBuffer {
     public String toString() {
         return Stream.of(previous, current)
                 .filter(s -> !s.isEmpty())
-                .collect(Collectors.joining(" "));
+                .collect(Collectors.joining("\" - \"", "\"", "\""));
     }
 }
