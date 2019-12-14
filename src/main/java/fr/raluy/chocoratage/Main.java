@@ -2,6 +2,7 @@ package fr.raluy.chocoratage;
 
 import org.jnativehook.GlobalScreen;
 
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,7 +13,8 @@ public class Main {
         configureJNativeHookLogger();
 
         KeyLogger keyLogger = new KeyLogger();
-        SessionLocker sessionLocker = new SessionLocker();
+        Os os = Optional.ofNullable(Config.getForcedOs()).orElseGet(() -> Os.guess());
+        SessionLocker sessionLocker = new SessionLocker(os);
         keyLogger.onChocoblastage(sessionLocker);
 
         if(Config.isTestSessionLocking()) {
