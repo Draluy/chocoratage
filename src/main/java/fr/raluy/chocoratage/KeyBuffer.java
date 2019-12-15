@@ -29,8 +29,8 @@ public class KeyBuffer {
     };
     private final Predicate<ForbiddenPhrase> equalsPredicate = (fp) -> fp.getPhraseLower().equals(getLatestAsString(fp.getWordCount()));
 
-    public KeyBuffer() {
-        matchingPredicate = Config.isRelax() ? levenshteinPredicate : equalsPredicate;
+    public KeyBuffer(boolean relax) {
+        matchingPredicate = relax ? levenshteinPredicate : equalsPredicate;
     }
 
     /**
@@ -49,9 +49,7 @@ public class KeyBuffer {
             currentWord.append(keyText.toLowerCase());
 
             if (currentWord.length() > MAX_WORD_SIZE) {
-                //cut the buffer back to MAX_SIZE chars
-                currentWord.setLength(0);
-                currentWord.append(currentWord.substring(currentWord.length() - MAX_WORD_SIZE));
+                currentWord.delete(0, currentWord.length() - MAX_WORD_SIZE); //cut the buffer back to MAX_SIZE chars
             }
         }
         else if(isCurrentWordExists()) { // let's start a new word

@@ -2,7 +2,7 @@ package fr.raluy.chocoratage;
 
 
 import org.jnativehook.keyboard.NativeKeyEvent;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.stream.IntStream;
@@ -11,98 +11,92 @@ import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class KeysBufferTest {
-    KeyBuffer keysBuffer = new KeyBuffer();
+    public static final String ONE_HUNDRED_CHARS_UPPER = "THISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOTTHISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOT1234";
+    public static final String ONE_HUNDRED_CHARS_LOWER = ONE_HUNDRED_CHARS_UPPER.toLowerCase();
+    KeyBuffer keysBuffer = new KeyBuffer(true);
 
     @Test
-    public void shouldBeEmptyAtFirst() throws Exception {
+    public void shouldBeEmptyAtFirst() {
         assertThat(keysBuffer.toString()).isEqualTo("");
     }
 
     @Test
-    public void shouldAddStringToEmptyBuffer() throws Exception {
-        addStringToBuffer("test");
+    public void shouldAddStringToEmptyBuffer() {
+        addStringToBuffer("TEST");
 
-        assertThat(keysBuffer.toString()).isEqualTo("TEST");
+        assertThat(keysBuffer.toString()).isEqualTo("test");
     }
 
     @Test
-    public void shouldAddStringToBuffer() throws Exception {
-        addStringToBuffer("test ");
-        addStringToBuffer("have");
+    public void shouldAddStringToBuffer() {
+        addStringToBuffer("TEST ");
+        addStringToBuffer("HAVE");
 
-        assertThat(keysBuffer.toString()).isEqualTo("TEST HAVE");
+        assertThat(keysBuffer.toString()).isEqualTo("test have");
     }
 
     @Test
-    public void shouldNotAddNull() throws Exception {
-        addStringToBuffer("test");
+    public void shouldNotAddNull() {
+        addStringToBuffer("TEST");
         keysBuffer.add(null);
 
-        assertThat(keysBuffer.toString()).isEqualTo("TEST");
+        assertThat(keysBuffer.toString()).isEqualTo("test");
     }
 
     @Test
-    public void shouldAllow100Chars() throws Exception {
-        addStringToBuffer("thislineisonehundredcharacterslongbelieveitornotthislineisonehundredcharacterslongbelieveitornot1234 ");
+    public void shouldAllow100Chars() {
+        addStringToBuffer(ONE_HUNDRED_CHARS_UPPER + " ");
 
         assertThat(keysBuffer.toString()).hasSize(100);
-        assertThat(keysBuffer.toString()).isEqualTo("THISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOTTHISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOT1234");
+        assertThat(keysBuffer.toString()).isEqualTo(ONE_HUNDRED_CHARS_LOWER);
     }
 
     @Test
-    public void shouldReplaceEndingCharsWhenFull() throws Exception {
-        addStringToBuffer("thislineisonehundredcharacterslongbelieveitornotthislineisonehundredcharacterslongbelieveitornot1234");
-        addStringToBuffer("replacement");
+    public void shouldReplaceEndingCharsWhenFull() {
+        addStringToBuffer(ONE_HUNDRED_CHARS_UPPER);
+        addStringToBuffer("REPLACEMENT");
 
         assertThat(keysBuffer.toString()).hasSize(100);
-        assertThat(keysBuffer.toString()).isEqualTo("NEHUNDREDCHARACTERSLONGBELIEVEITORNOTTHISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOT1234REPLACEMENT");
+        assertThat(keysBuffer.toString()).isEqualTo("nehundredcharacterslongbelieveitornotthislineisonehundredcharacterslongbelieveitornot1234replacement");
     }
 
 
     @Test
-    public void testContains() throws Exception {
+    public void testContains() {
         addStringToBuffer("HUNDRED ");
-        addStringToBuffer("1234");
-
         boolean result = keysBuffer.containsIgnoreCase(singleton(new ForbiddenPhrase("hundred")));
         assertThat(result).isTrue();
 
+        addStringToBuffer("1234");
         result = keysBuffer.containsIgnoreCase(singleton(new ForbiddenPhrase("1234")));
+        assertThat(result).isTrue();
+
+        result = keysBuffer.containsIgnoreCase(singleton(new ForbiddenPhrase("hundred 1234")));
         assertThat(result).isTrue();
     }
 
     @Test
-    public void testDoesNotContain() throws Exception {
-        addStringToBuffer("thislineisonehundredcharacterslongbelieveitornotthislineisonehundredcharacterslongbelieveitornot1234");
+    public void testDoesNotContain() {
+        addStringToBuffer(ONE_HUNDRED_CHARS_LOWER);
 
         boolean result = keysBuffer.containsIgnoreCase(singleton(new ForbiddenPhrase("eleven")));
         assertThat(result).isFalse();
     }
 
     @Test
-    public void testAddingSeveralSpacesShouldNotReplaceWords() throws Exception {
-        addStringToBuffer("replacement ");
+    public void testAddingSeveralSpacesShouldNotReplaceWords() {
+        addStringToBuffer("REPLACEMENT ");
         addStringToBuffer(" ");
         addStringToBuffer(";");
         addStringToBuffer(" ");
         addStringToBuffer(":");
-        addStringToBuffer("add");
+        addStringToBuffer("ADD");
 
-        assertThat(keysBuffer.toString()).isEqualTo("REPLACEMENT ADD");
+        assertThat(keysBuffer.toString()).isEqualTo("replacement add");
     }
 
     @Test
-    public void wordsShouldReplaceEachOther() throws Exception {
-        addStringToBuffer("replacement ");
-        addStringToBuffer("bunny ");
-        addStringToBuffer("road ");
-        addStringToBuffer("add");
-
-        assertThat(keysBuffer.toString()).isEqualTo("ROAD ADD");
-    }
-
-    @Test
-    public void testClear() throws Exception {
+    public void testClear() {
         addStringToBuffer("replacement");
 
         keysBuffer.clear();
@@ -113,9 +107,9 @@ public class KeysBufferTest {
     @Test
     public void shouldMatchApproiximateWoords() {
         addStringToBuffer("choKo ");
-        addStringToBuffer("croissanst");
-
         assertThat(keysBuffer.containsIgnoreCase(singleton(new ForbiddenPhrase("choco")))).isTrue();
+
+        addStringToBuffer("croissanst");
         assertThat(keysBuffer.containsIgnoreCase(singleton(new ForbiddenPhrase("croissants")))).isTrue();
         assertThat(keysBuffer.containsIgnoreCase(singleton(new ForbiddenPhrase("decroissants")))).isFalse();
     }

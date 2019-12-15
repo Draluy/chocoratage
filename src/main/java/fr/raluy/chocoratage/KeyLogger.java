@@ -12,7 +12,7 @@ import java.util.Set;
 public class KeyLogger implements NativeKeyListener {
 
     private Set<Runnable> listeners = new HashSet<>();
-    private KeyBuffer buffer = new KeyBuffer();
+    private KeyBuffer buffer = new KeyBuffer(Config.isRelax());
 
     public KeyLogger() {
         try {
