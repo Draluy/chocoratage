@@ -3,8 +3,10 @@ package fr.raluy.chocoratage;
 public class Levenshtein {
 
     public static int distance(String a, String b) {
-        a = a.toLowerCase();
-        b = b.toLowerCase();
+        return distanceSameCase(a.toLowerCase(), b.toLowerCase());
+    }
+
+    private static int distanceSameCase(String a, String b) {
         // i == 0
         int [] costs = new int [b.length() + 1];
         for (int j = 0; j < costs.length; j++)
@@ -23,7 +25,15 @@ public class Levenshtein {
     }
 
     public static boolean isThisSimilarEnoughToThat (String dictWord, String b){
+        return isThisSimilarEnoughToThat(dictWord, b, false);
+    }
+
+    public static boolean isThisSimilarEnoughToThat (String dictWord, String challenge, boolean alignCase){
         int maxDistance = dictWord.length()/4;
-        return distance(dictWord, b) <= maxDistance;
+        return isThisSimilarEnoughToThat(dictWord, challenge, maxDistance, alignCase);
+    }
+
+    public static boolean isThisSimilarEnoughToThat(String dictWord, String b, int maxDistance, boolean alignCase) {
+        return (alignCase ? distance(dictWord, b) : distanceSameCase(dictWord, b)) <= maxDistance;
     }
 }

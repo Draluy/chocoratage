@@ -1,21 +1,35 @@
 package fr.raluy.chocoratage;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import static java.lang.Boolean.parseBoolean;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.joining;
 
 public class Config {
 
+    public static final String FORBIDDEN_LIST_DEFAULT = "forbidden.lst";
+    private static String forbiddenPhrasesPath;
+    private static Charset forbiddenPhrasesCharset;
+    private static List<ForbiddenPhrase> forbiddenPhrases;
     private static boolean debugMode;
     private static boolean testSessionLocking;
-    private static boolean simulation;
-    private static boolean relax;
     private static Os forcedOs;
+    private static boolean relax;
+    private static boolean simulation;
 
-    public static void parse(String[] args) {
+    public static void parse(String... args) throws IOException {
         Iterator<String> it = asList(args).listIterator();
         if(!it.hasNext()) {
             help();
@@ -36,9 +50,18 @@ public class Config {
                 case "help":
                     help();
                     break;
+                case "c":
+                case "cs":
+                case "charset":
+                    forbiddenPhrasesCharset = Charset.forName(value);
+                    break;
                 case "d":
                 case "debug":
                     debugMode = true;
+                    break;
+                case "f":
+                case "forbidden":
+                    forbiddenPhrasesPath = value;
                     break;
                 case "l":
                 case "lock":
@@ -60,12 +83,37 @@ public class Config {
                     break;
             }
         }
+
+        if(forbiddenPhrasesCharset == null) {
+            forbiddenPhrasesCharset = StandardCharsets.UTF_8;
+        }
+        if((forbiddenPhrases = readForbiddenPhrases()).isEmpty()) {
+            throw new IllegalArgumentException("No forbidden phrases supplied.");
+        }
     }
+
+    private static List<ForbiddenPhrase> readForbiddenPhrases() throws IOException {
+        List<ForbiddenPhrase> phrases = new ArrayList<>();
+        try(BufferedReader forbiddenPhrasesReader = (forbiddenPhrasesPath != null)
+                ? Files.newBufferedReader(Paths.get(forbiddenPhrasesPath), forbiddenPhrasesCharset)
+                : new BufferedReader(new InputStreamReader(Config.class.getResourceAsStream("/" + FORBIDDEN_LIST_DEFAULT), forbiddenPhrasesCharset))) {
+
+            String phrase;
+            while((phrase = forbiddenPhrasesReader.readLine()) != null) {
+                if(!phrase.trim().isEmpty()) {
+                    phrases.add(new ForbiddenPhrase(phrase));
+                }
+            }
+        }
+        return unmodifiableList(phrases);
+    }
+
 
     private static void help() {
         System.out.println("Available options:");
         System.out.println("  h/help : this help");
         System.out.println("  d/debug : trace events on the console");
+        System.out.println("  f/forbidden=<path> : supply a list of forbidden phrases, one per line, each may have several words, to replace the default one");
         System.out.println("  l/lock : lock session at startup");
         System.out.println("  o/os=<os> : force the os, available values are: "
                 + stream(Os.values()).map(Os::name).collect(joining(", ", "[", "]")));
@@ -91,5 +139,9 @@ public class Config {
 
     public static Os getForcedOs() {
         return forcedOs;
+    }
+
+    public static List<ForbiddenPhrase> getForbiddenPhrases() {
+        return forbiddenPhrases;
     }
 }

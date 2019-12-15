@@ -11,8 +11,8 @@ import java.util.Set;
 
 public class KeyLogger implements NativeKeyListener {
 
-    private Set<Runnable> chocoListeners = new HashSet<>();
-    private CircularBuffer circularBuffer = new CircularBuffer();
+    private Set<Runnable> listeners = new HashSet<>();
+    private KeyBuffer buffer = new KeyBuffer();
 
     public KeyLogger() {
         try {
@@ -34,16 +34,15 @@ public class KeyLogger implements NativeKeyListener {
     public void nativeKeyPressed(NativeKeyEvent nativeKeyEvent) {
 
         getIfNiceKey(nativeKeyEvent)
-                .ifPresent(keyEvent -> circularBuffer.add(keyEvent));
+                .ifPresent(keyEvent -> buffer.add(keyEvent));
 
-        if (circularBuffer.containsUppercase(ForbiddenWords.words)) {
+        if (Config.isDebugMode()) {
+            System.out.println("Buffer state = " + buffer.toString());
+        }
 
-            if (Config.isDebugMode()) {
-                System.out.println("Buffer state = " + circularBuffer.toString());
-            }
-
-            circularBuffer.clear();
-            chocoListeners.forEach(Runnable::run);
+        if (buffer.containsIgnoreCase(Config.getForbiddenPhrases())) {
+            buffer.clear();
+            listeners.forEach(Runnable::run);
         }
     }
 
@@ -59,7 +58,7 @@ public class KeyLogger implements NativeKeyListener {
 
     }
 
-    public void onChocoblastage(Runnable function) {
-        chocoListeners.add(function);
+    public void addListener(Runnable function) {
+        listeners.add(function);
     }
 }

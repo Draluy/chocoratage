@@ -1,29 +1,28 @@
 package fr.raluy.chocoratage;
 
 
-import org.assertj.core.api.Assertions;
 import org.jnativehook.keyboard.NativeKeyEvent;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.stream.IntStream;
 
+import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CircularBufferTest {
-    CircularBuffer circularBuffer = new CircularBuffer();
+public class KeysBufferTest {
+    KeyBuffer keysBuffer = new KeyBuffer();
 
     @Test
     public void shouldBeEmptyAtFirst() throws Exception {
-        assertThat(circularBuffer.toString()).isEqualTo("");
+        assertThat(keysBuffer.toString()).isEqualTo("");
     }
 
     @Test
     public void shouldAddStringToEmptyBuffer() throws Exception {
         addStringToBuffer("test");
 
-        assertThat(circularBuffer.toString()).isEqualTo("TEST");
+        assertThat(keysBuffer.toString()).isEqualTo("TEST");
     }
 
     @Test
@@ -31,23 +30,23 @@ public class CircularBufferTest {
         addStringToBuffer("test ");
         addStringToBuffer("have");
 
-        assertThat(circularBuffer.toString()).isEqualTo("TEST HAVE");
+        assertThat(keysBuffer.toString()).isEqualTo("TEST HAVE");
     }
 
     @Test
     public void shouldNotAddNull() throws Exception {
         addStringToBuffer("test");
-        circularBuffer.add(null);
+        keysBuffer.add(null);
 
-        assertThat(circularBuffer.toString()).isEqualTo("TEST");
+        assertThat(keysBuffer.toString()).isEqualTo("TEST");
     }
 
     @Test
     public void shouldAllow100Chars() throws Exception {
         addStringToBuffer("thislineisonehundredcharacterslongbelieveitornotthislineisonehundredcharacterslongbelieveitornot1234 ");
 
-        assertThat(circularBuffer.toString()).hasSize(100);
-        assertThat(circularBuffer.toString()).isEqualTo("THISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOTTHISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOT1234");
+        assertThat(keysBuffer.toString()).hasSize(100);
+        assertThat(keysBuffer.toString()).isEqualTo("THISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOTTHISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOT1234");
     }
 
     @Test
@@ -55,8 +54,8 @@ public class CircularBufferTest {
         addStringToBuffer("thislineisonehundredcharacterslongbelieveitornotthislineisonehundredcharacterslongbelieveitornot1234");
         addStringToBuffer("replacement");
 
-        assertThat(circularBuffer.toString()).hasSize(100);
-        assertThat(circularBuffer.toString()).isEqualTo("NEHUNDREDCHARACTERSLONGBELIEVEITORNOTTHISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOT1234REPLACEMENT");
+        assertThat(keysBuffer.toString()).hasSize(100);
+        assertThat(keysBuffer.toString()).isEqualTo("NEHUNDREDCHARACTERSLONGBELIEVEITORNOTTHISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOT1234REPLACEMENT");
     }
 
 
@@ -65,10 +64,10 @@ public class CircularBufferTest {
         addStringToBuffer("HUNDRED ");
         addStringToBuffer("1234");
 
-        boolean result = circularBuffer.containsUppercase(Arrays.asList("hundred"));
+        boolean result = keysBuffer.containsIgnoreCase(singleton(new ForbiddenPhrase("hundred")));
         assertThat(result).isTrue();
 
-        result = circularBuffer.containsUppercase(Arrays.asList("1234"));
+        result = keysBuffer.containsIgnoreCase(singleton(new ForbiddenPhrase("1234")));
         assertThat(result).isTrue();
     }
 
@@ -76,7 +75,7 @@ public class CircularBufferTest {
     public void testDoesNotContain() throws Exception {
         addStringToBuffer("thislineisonehundredcharacterslongbelieveitornotthislineisonehundredcharacterslongbelieveitornot1234");
 
-        boolean result = circularBuffer.containsUppercase(Arrays.asList("eleven"));
+        boolean result = keysBuffer.containsIgnoreCase(singleton(new ForbiddenPhrase("eleven")));
         assertThat(result).isFalse();
     }
 
@@ -89,7 +88,7 @@ public class CircularBufferTest {
         addStringToBuffer(":");
         addStringToBuffer("add");
 
-        assertThat(circularBuffer.toString()).isEqualTo("REPLACEMENT ADD");
+        assertThat(keysBuffer.toString()).isEqualTo("REPLACEMENT ADD");
     }
 
     @Test
@@ -99,16 +98,16 @@ public class CircularBufferTest {
         addStringToBuffer("road ");
         addStringToBuffer("add");
 
-        assertThat(circularBuffer.toString()).isEqualTo("ROAD ADD");
+        assertThat(keysBuffer.toString()).isEqualTo("ROAD ADD");
     }
 
     @Test
     public void testClear() throws Exception {
         addStringToBuffer("replacement");
 
-        circularBuffer.clear();
+        keysBuffer.clear();
 
-        assertThat(circularBuffer.toString()).isEmpty();
+        assertThat(keysBuffer.toString()).isEmpty();
     }
 
     @Test
@@ -116,22 +115,22 @@ public class CircularBufferTest {
         addStringToBuffer("choKo ");
         addStringToBuffer("croissanst");
 
-        assertThat(circularBuffer.containsUppercase(Arrays.asList("choco"))).isTrue();
-        assertThat(circularBuffer.containsUppercase(Arrays.asList("croissants"))).isTrue();
-        assertThat(circularBuffer.containsUppercase(Arrays.asList("decroissants"))).isFalse();
+        assertThat(keysBuffer.containsIgnoreCase(singleton(new ForbiddenPhrase("choco")))).isTrue();
+        assertThat(keysBuffer.containsIgnoreCase(singleton(new ForbiddenPhrase("croissants")))).isTrue();
+        assertThat(keysBuffer.containsIgnoreCase(singleton(new ForbiddenPhrase("decroissants")))).isFalse();
     }
 
 
     private void addStringToBuffer(String str) {
         for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i); //magic offset
-            circularBuffer.add(createNativeKeyEvent(c));
+            keysBuffer.add(createNativeKeyEvent(c));
         }
     }
 
     private void addNChars(int n) {
         IntStream.range(0, n)
-                .forEach(i -> circularBuffer.add(createNativeKeyEvent(NativeKeyEvent.VC_A)));
+                .forEach(i -> keysBuffer.add(createNativeKeyEvent(NativeKeyEvent.VC_A)));
     }
 
     private NativeKeyEvent createNativeKeyEvent(int keyCode) {
