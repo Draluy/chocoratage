@@ -15,6 +15,7 @@ jar {
 group 'fr.raluy'
 version '1.0-SNAPSHOT'
 
+// very common version + freebsd doesn't support later than openjdk8: https://www.freebsd.org/java/
 sourceCompatibility = 1.8
 
 repositories {
