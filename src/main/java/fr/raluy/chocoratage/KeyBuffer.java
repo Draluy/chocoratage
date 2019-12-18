@@ -45,7 +45,7 @@ public class KeyBuffer {
         }
 
         if (isLetterOrDigit(keyEvent)) {
-            String keyText = keyEvent.getKeyText(keyEvent.getKeyCode());
+            String keyText = keyEvent.getKeyText(keyEvent.getKeyCode()); // FIXME "é" is appended as "2" on a FR keyboard
             currentWord.append(keyText.toLowerCase());
 
             if (currentWord.length() > MAX_WORD_SIZE) {
@@ -59,7 +59,7 @@ public class KeyBuffer {
             previousWords.add(currentWord.toString());
             currentWord.setLength(0);
         }
-        // TODO handle backspace, paste the best we can
+        // TODO handle backspace and paste the best we can
 
 
     }

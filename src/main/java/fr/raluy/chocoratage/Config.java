@@ -1,5 +1,8 @@
 package fr.raluy.chocoratage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -19,7 +22,10 @@ import static java.util.stream.Collectors.joining;
 
 public class Config {
 
+    private static final Logger log = LoggerFactory.getLogger(Config.class);
+
     public static final String FORBIDDEN_LIST_DEFAULT = "forbidden.lst";
+
     private static String forbiddenPhrasesPath;
     private static Charset forbiddenPhrasesCharset;
     private static List<ForbiddenPhrase> forbiddenPhrases;
@@ -50,33 +56,38 @@ public class Config {
                 case "help":
                     help();
                     break;
+
                 case "c":
                 case "cs":
                 case "charset":
                     forbiddenPhrasesCharset = Charset.forName(value);
                     break;
+
                 case "d":
                 case "debug":
                     debugMode = true;
                     break;
+
                 case "f":
                 case "forbidden":
                     forbiddenPhrasesPath = value;
                     break;
+
                 case "l":
                 case "lock":
                     testSessionLocking = true;
                     break;
+
                 case "o":
                 case "os":
-                    if(it.hasNext()) {
-                        forcedOs = Os.valueOf(value.toUpperCase());
-                    }
+                    forcedOs = Os.valueOf(value.toUpperCase());
                     break;
+
                 case "r":
                 case "relax":
                     relax = value == null || parseBoolean(value);
                     break;
+
                 case "s":
                 case "simu":
                     simulation = true;
@@ -91,6 +102,8 @@ public class Config {
             throw new IllegalArgumentException("No forbidden phrases supplied.");
         }
     }
+
+
 
     private static List<ForbiddenPhrase> readForbiddenPhrases() throws IOException {
         List<ForbiddenPhrase> phrases = new ArrayList<>();

@@ -1,35 +1,46 @@
 package fr.raluy.chocoratage;
 
+import org.slf4j.LoggerFactory;
+
 import static java.util.Objects.requireNonNull;
 
 public class SessionLocker implements Runnable {
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(SessionLocker.class);
 
-    private Os os;
+    private LockMethod lockMethod;
 
-    public SessionLocker() {
-        this(Os.guess());
+    public SessionLocker(LockMethod lockMethod) {
+        this.lockMethod = requireNonNull(lockMethod, "Lock method must be specified.");
+        if(lockMethod == LockMethod.OSX) {
+            log.info("Caution with OSX: for the lock screen to actually protect you, go to the \"Security & Privacy\" settings and select \"Require password *immediately* after sleep or screensaver begins\"");
+        }
+
         if (Config.isDebugMode()) {
-            System.out.println("Guessing OS");
+            log.info("Lock method set to {}", this.lockMethod.name());
         }
     }
 
     public SessionLocker(Os os) {
-        this.os = requireNonNull(os, "OS must be specified.");
+        this(LockMethod.guess(os));
+    }
+
+    public static SessionLocker guess() {
         if (Config.isDebugMode()) {
-            System.out.printf("%s configured for %s\n", getClass().getSimpleName(), this.os.name());
+            log.info("Guessing OS and Lock method");
         }
+        return new SessionLocker(Os.guess());
     }
 
     @Override
     public void run() {
         if (Config.isDebugMode()) {
-            System.out.printf("Running %s for %s\n", getClass().getSimpleName(), os.name());
+            log.info("Running lock method {}", lockMethod.name());
         }
 
         if(Config.isSimulation()) {
-            System.out.println("lockSession() simulation!");
+            log.info("lockSession() simulation!");
         } else {
-            os.lockSession();
+            lockMethod.lock();
         }
     }
 }

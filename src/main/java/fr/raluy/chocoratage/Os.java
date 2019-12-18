@@ -1,65 +1,165 @@
 package fr.raluy.chocoratage;
 
-import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.io.IOException;
 import java.util.Objects;
-import java.util.stream.IntStream;
 
+import static fr.raluy.chocoratage.Utils.*;
 import static java.util.Arrays.stream;
 
 public enum Os {
     LINUX("linux") {
-        /**
-         * Control+Alt+L
-         */
-        public void lockSession() {
-            //TODO dbus-send --type=method_call --dest=org.gnome.ScreenSaver /org/gnome/ScreenSaver org.gnome.ScreenSaver.Lock
-            //TODO $!(sleep 10s ;  xset dpms force suspend) & xdg-screensaver lock
-            //TODO xdg-screensaver lock
-            robotTyping(KeyEvent.VK_CONTROL, KeyEvent.VK_ALT, KeyEvent.VK_L);
-        }
-    },
-
-    WINDOWS("windows") {
-        /**
-         * Windows+L
-         */
-        public void lockSession() {
-            try {
-                ProcessBuilder processBuilder = new ProcessBuilder(System.getenv("windir") + "\\System32\\rundll32.exe", "user32.dll,LockWorkStation");
-                Process process = processBuilder.start();
-                process.waitFor();
-            } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    },
-
-    MAC("mac", "darwin", "rhapsody") { // Rhapsody is the Power PC Mac name. Not sure there's many left but sure as hell they need to be chocoblast-proof. TODO not sure "darwin" is a valid name.
-
-        /**
-         * Control+Shift+Power or Control+Shift+Escape for older MacBooks with an optical drive
-         */
         @Override
-        public void lockSession() {
-            robotTyping(KeyEvent.VK_CONTROL, KeyEvent.VK_SHIFT, KeyEvent.VK_ESCAPE);
+        public boolean isLockMethodKnown() {
+            return false;
         }
     },
-    FREEBSD("freebsd") {
-        //TODO xlock -mode qix from http://www.freshports.org/x11/xlockmore
+    WINDOWS("windows") {
+        @Override
+        public boolean isLockMethodKnown() {
+            return true;
+        }
+        @Override
+        public LockMethod getDefaultLockMethod() {
+            return LockMethod.WINDOWS;
+        }
     },
-    SOLARIS("solaris", "sun"),
-    AIX("aix"), // openjdk still supports it
-    OTHER_UNIX("hp-ux", "irix", "digital", "compaq"), // Not running any JVM, unless dockerized maybe
+    OSX("mac", "darwin", "rhapsody") {
+        @Override
+        public boolean isLockMethodKnown() {
+            return true;
+        }
+        @Override
+        public LockMethod getDefaultLockMethod() {
+            return LockMethod.OSX;
+        }
+    }, // Rhapsody is the Power PC Mac name. Not sure there's many left but sure as hell they need to be chocoblast-proof. TODO not sure "darwin" is a valid name.
+    FREEBSD("freebsd") {
+        @Override
+        public boolean isLockMethodKnown() {
+            return true;
+        }
+        @Override
+        public LockMethod getDefaultLockMethod() {
+            return LockMethod.GNOME_SESSION_QUIT;
+        }
+    },
+    SOLARIS("solaris", "sunos", "sun") {
+        @Override
+        public boolean isLockMethodKnown() {
+            return true;
+        }
+        @Override
+        public LockMethod getDefaultLockMethod() {
+            return LockMethod.XLOCK;
+        }
+    }, // Not sure "sun" is a valid value
+    AIX("aix"), // openjdk still supports it TODO
+    OTHER_UNIX("hp-ux", "irix", "digital", "compaq"), // Not running any JVM, unless dockerized maybe, which will obviously not allow locking of the host
     UNKNOWN;
 
+    private static final String WINDOWS_NAME = "Windows";
+    public static final String ENV_DESKTOP = "XDG_CURRENT_DESKTOP";
+    public static final String ENV_SESSION = "GDMSESSION";
 
     private String[] names;
 
 
     Os(String... names) {
         this.names = stream(names).filter(Objects::nonNull).map(String::toLowerCase).toArray(String[]::new);
+    }
+
+    public String[] getNames() {
+        return names;
+    }
+
+    public boolean isLockMethodKnown() {
+        return false;
+    }
+
+    public LockMethod getDefaultLockMethod() {
+        throw new UnsupportedOperationException("Lock Method unknown.");
+    }
+
+
+    /**
+     * @return "Linux", "FreeBSD", "Mac OSX", "SunOS", "Windows <version>"...
+     */
+    public static String getOsType() {
+        String osType = System.getProperty("os.name");
+        if(WINDOWS.matches(osType)) {
+            osType = WINDOWS_NAME;
+        }
+        return osType;
+    }
+
+    /**
+     * @return the OS name
+     * @see http://0pointer.de/blog/projects/os-release.html
+     * @see https://www.freedesktop.org/software/systemd/man/os-release.html
+     */
+    public static String getOsName() {
+        String osType = getOsType();
+        if (LINUX.matches(osType)) {
+            return or(getValueForKey("NAME", "=", runProcessAndOutput("cat", "/etc/os-release")), // eg: NAME="Ubuntu"
+                    () -> getValueAfter(":", getFirst(runProcessAndOutput("lsb_release", "-i"))), //eg: Distributor ID:	Ubuntu
+                    () -> getValueBefore("release", getFirst(runProcessAndOutput("cat", "/etc/fedora-release"))), // eg: Fedora release 31 (Thirty One)
+                    () -> getFirstOptional(runProcessAndOutput("uname", "-n")))
+                    .orElse(osType);
+        } else {
+            return osType;
+        }
+    }
+
+    public static String getOsVersionId() {
+        String osType = getOsType();
+        if (LINUX.matches(osType)) {
+            return or(getValueForKey("VERSION_ID", "=", runProcessAndOutput("cat", "/etc/os-release")), // eg: VERSION_ID="18.04"
+                    () -> getValueAfter(":", getFirst(runProcessAndOutput("lsb_release", "-r"))), // eg: Release:	18.04
+                    () -> getValueAfter("release", getFirst(runProcessAndOutput("cat", "/etc/fedora-release"))), // eg: Fedora release 31 (Thirty One)
+                    () -> getFirstOptional(runProcessAndOutput("uname", "-r")))
+                    .orElse(osType);
+        } else {
+            return getOsVersion();
+        }
+    }
+
+    /**
+     * Not very useful, will probably return the kernel version like 4.15.0-72-generic
+     * @return
+     */
+    public static String getOsVersion() {
+        return System.getProperty("os.version");
+    }
+
+    /**
+     * eg: amd64
+     * @return
+     */
+    public static String getOsArch() {
+        return System.getProperty("os.arch");
+    }
+
+    /**
+     * For Linux
+     * XDG_CURRENT_DESKTOP - Tells you what desktop environment you are using
+     * @see https://askubuntu.com/questions/72549/how-to-determine-which-window-manager-is-running
+     */
+    public static String getDesktopEnvironment() {
+        return System.getenv(ENV_DESKTOP);
+    }
+
+    /**
+     * For Linux
+     * GDMSESSION - Tells you what option you selected from the lightdm greeter to login.
+     * @see https://askubuntu.com/questions/72549/how-to-determine-which-window-manager-is-running
+     */
+    public static String getGdmSession() {
+        return System.getenv(ENV_SESSION);
+    }
+
+
+    public static Os guess() {
+        String osName = getOsType();
+        return stream(values()).filter(os -> os.matches(osName)).findAny().orElse(UNKNOWN);
     }
 
     private boolean matches(String name) {
@@ -69,41 +169,5 @@ public enum Os {
             String lowName = name.toLowerCase();
             return stream(names).anyMatch(n -> lowName.startsWith(n));
         }
-    }
-
-    public void lockSession() {
-        throw new UnsupportedOperationException(name());
-    }
-
-
-    void robotTyping(int... lockingKeys) {
-        try {
-            Robot robot = new Robot();
-            IntStream.of(lockingKeys).forEach(robot::keyPress);
-
-            Thread.sleep(100L);
-
-            IntStream.of(lockingKeys).forEach(robot::keyRelease);
-        } catch (AWTException | InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    public static String getOsName() {
-        return System.getProperty("os.name");
-    }
-
-    public static String getOsVersion() {
-        return System.getProperty("os.version");
-    }
-
-    public static String getOsArch() {
-        return System.getProperty("os.arch"); // eg: amd64
-    }
-
-    public static Os guess() {
-        String osName = getOsName();
-        return stream(values()).filter(os -> os.matches(osName)).findAny().orElse(UNKNOWN);
     }
 }
