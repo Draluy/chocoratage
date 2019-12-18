@@ -1,5 +1,7 @@
-package fr.raluy.chocoratage;
+package fr.raluy.chocoratage.locking;
 
+import fr.raluy.chocoratage.Config;
+import fr.raluy.chocoratage.Os;
 import org.slf4j.LoggerFactory;
 
 import static java.util.Objects.requireNonNull;

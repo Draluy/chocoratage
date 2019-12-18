@@ -1,9 +1,11 @@
 package fr.raluy.chocoratage;
 
+import fr.raluy.chocoratage.locking.SessionLocker;
 import org.jnativehook.GlobalScreen;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,7 +13,7 @@ import java.util.logging.Logger;
 public class Main {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String... args) throws IOException {
+    public static void main(String... args) throws IOException, URISyntaxException {
         Config.parse(args);
 
         displayOsInfo();

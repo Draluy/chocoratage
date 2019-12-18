@@ -67,55 +67,6 @@ public class Utils {
     return Optional.empty();
   }
 
-  public static void runProcess(String... command) {
-    if(Config.isDebugMode()) {
-      log.info("Running command: " + String.join(" ", command));
-    }
-
-    ProcessBuilder processBuilder = new ProcessBuilder(command);
-    Process process = null;
-    try {
-      process = processBuilder.start();
-      process.waitFor();
-    } catch (IOException | InterruptedException e) {
-      throw new RuntimeException(e);
-    } finally {
-      if (process != null) {
-        process.destroy();
-      }
-    }
-  }
-
-  public static List<String> runProcessAndOutput(String... command) {
-    if(Config.isDebugMode()) {
-      log.info("Running command: " + String.join(" ", command));
-    }
-
-    ProcessBuilder processBuilder = new ProcessBuilder(command);
-    Process process = null;
-    List<String> output = new ArrayList<>(100);
-    try {
-      process = processBuilder.start();
-      try (BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-        String line;
-        while ((line = br.readLine()) != null) {
-          output.add(line);
-        }
-      }
-      process.waitFor();
-    } catch (IOException | InterruptedException e) {
-      throw new RuntimeException(e);
-    } finally {
-      if (process != null) {
-        process.destroy();
-      }
-    }
-
-    output.forEach(log::info);
-    return output;
-  }
-
-
   public static Optional<String> getValueForKey(String key, String separator, Collection<String> props) {
     String value = null;
     for (String prop : props) {
@@ -156,16 +107,4 @@ public class Utils {
     return Optional.ofNullable(trimToNull(unquote(value)));
   }
 
-  public static void robotTyping(int... keys) {
-    try {
-      Robot robot = new Robot();
-      IntStream.of(keys).forEach(robot::keyPress);
-
-      Thread.sleep(100L);
-
-      IntStream.of(keys).forEach(robot::keyRelease);
-    } catch (AWTException | InterruptedException e) {
-      e.printStackTrace();
-    }
-  }
 }

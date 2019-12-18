@@ -14,7 +14,7 @@ public class KeyLogger implements NativeKeyListener {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(KeyLogger.class);
 
     private Set<Runnable> listeners = new HashSet<>();
-    private KeyBuffer buffer = new KeyBuffer(Config.isRelax());
+    private KeyBuffer buffer = new KeyBuffer(Config.isStrict());
 
     public KeyLogger() {
         try {

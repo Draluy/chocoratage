@@ -21,7 +21,7 @@ public class KeyBuffer {
     private final Predicate<ForbiddenPhrase> levenshteinPredicate = (fp) -> {
         String challenge = getLatestAsString(fp.getWordCount());
         int challengeLength = challenge.length();
-        if(challengeLength <= 4 && challengeLength < fp.getPhraseLength()) { // to prevent borderline positives like "choc" for "choco" => will work for "choko" though
+        if (challengeLength <= 4 && challengeLength < fp.getPhraseLength()) { // to prevent borderline positives like "choc" for "choco" => will work for "choko" though
             return false;
         } else {
             return Levenshtein.isThisSimilarEnoughToThat(fp.getPhraseLower(), challenge, false);
@@ -29,8 +29,8 @@ public class KeyBuffer {
     };
     private final Predicate<ForbiddenPhrase> equalsPredicate = (fp) -> fp.getPhraseLower().equals(getLatestAsString(fp.getWordCount()));
 
-    public KeyBuffer(boolean relax) {
-        matchingPredicate = relax ? levenshteinPredicate : equalsPredicate;
+    public KeyBuffer(boolean strict) {
+        matchingPredicate = strict ? equalsPredicate : levenshteinPredicate;
     }
 
     /**
@@ -44,27 +44,33 @@ public class KeyBuffer {
             return;
         }
 
+        int currentSize = currentWord.length();
         if (isLetterOrDigit(keyEvent)) {
             String keyText = keyEvent.getKeyText(keyEvent.getKeyCode()); // FIXME "é" is appended as "2" on a FR keyboard
             currentWord.append(keyText.toLowerCase());
 
-            if (currentWord.length() > MAX_WORD_SIZE) {
-                currentWord.delete(0, currentWord.length() - MAX_WORD_SIZE); //cut the buffer back to MAX_SIZE chars
+            if (currentSize > MAX_WORD_SIZE) {
+                currentWord.delete(0, currentSize - MAX_WORD_SIZE); //cut the buffer back to MAX_SIZE chars
             }
-        }
-        else if(isCurrentWordExists()) { // let's start a new word
-            if(previousWords.size() == MAX_WORDS) {
+        } else if (isBackspace(keyEvent)) {
+            if (isCurrentWordExists()) {
+                currentWord.delete(currentSize - 1, currentSize);
+            }
+        } else if (isCurrentWordExists()) { // let's start a new word
+            if (previousWords.size() == MAX_WORDS) {
                 previousWords.removeFirst();
             }
             previousWords.add(currentWord.toString());
             currentWord.setLength(0);
         }
-        // TODO handle backspace and paste the best we can
-
-
+        // TODO handle paste the best we can
     }
 
-    private static boolean isLetterOrDigit(NativeKeyEvent keyEvent) {
+    private boolean isBackspace(NativeKeyEvent keyEvent) {
+        return keyEvent.getKeyCode() == NativeKeyEvent.VC_BACKSPACE;
+    }
+
+    private boolean isLetterOrDigit(NativeKeyEvent keyEvent) {
         if (keyEvent.isActionKey()) {
             return false;
         }
@@ -96,10 +102,10 @@ public class KeyBuffer {
             throw new IllegalArgumentException("available: " + wordCount + ", requested: " + c);
         }
         List<String> result = new ArrayList<>(c);
-        if(c > 0) {
+        if (c > 0) {
             int previousWordsSize = previousWords.size();
             if (isCurrentWordExists()) {
-                result.addAll(previousWords.subList(previousWordsSize - c + 1 , previousWordsSize));
+                result.addAll(previousWords.subList(previousWordsSize - c + 1, previousWordsSize));
                 result.add(currentWord.toString());
             } else {
                 result.addAll(previousWords.subList(previousWordsSize - c, previousWordsSize));

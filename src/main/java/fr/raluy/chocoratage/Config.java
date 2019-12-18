@@ -1,18 +1,15 @@
 package fr.raluy.chocoratage;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.lang.Boolean.parseBoolean;
 import static java.util.Arrays.asList;
@@ -22,8 +19,6 @@ import static java.util.stream.Collectors.joining;
 
 public class Config {
 
-    private static final Logger log = LoggerFactory.getLogger(Config.class);
-
     public static final String FORBIDDEN_LIST_DEFAULT = "forbidden.lst";
 
     private static String forbiddenPhrasesPath;
@@ -32,21 +27,21 @@ public class Config {
     private static boolean debugMode;
     private static boolean testSessionLocking;
     private static Os forcedOs;
-    private static boolean relax;
+    private static boolean strict;
     private static boolean simulation;
 
-    public static void parse(String... args) throws IOException {
+    public static void parse(String... args) throws IOException, URISyntaxException {
         Iterator<String> it = asList(args).listIterator();
-        if(!it.hasNext()) {
+        if (!it.hasNext()) {
             help();
         }
 
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             String arg = it.next();
             String value = null;
             int i = arg.indexOf("=");
-            if(i >= 0) {
-                value = arg.substring(i+1); // before altering arg, please!
+            if (i >= 0) {
+                value = arg.substring(i + 1); // before altering arg, please!
                 arg = arg.substring(0, i);
             }
             arg = arg.toLowerCase();
@@ -83,9 +78,8 @@ public class Config {
                     forcedOs = Os.valueOf(value.toUpperCase());
                     break;
 
-                case "r":
-                case "relax":
-                    relax = value == null || parseBoolean(value);
+                case "strict":
+                    strict = value == null || parseBoolean(value);
                     break;
 
                 case "s":
@@ -95,30 +89,27 @@ public class Config {
             }
         }
 
-        if(forbiddenPhrasesCharset == null) {
+        if (forbiddenPhrasesCharset == null) {
             forbiddenPhrasesCharset = StandardCharsets.UTF_8;
         }
-        if((forbiddenPhrases = readForbiddenPhrases()).isEmpty()) {
+        if ((forbiddenPhrases = readForbiddenPhrases()).isEmpty()) {
             throw new IllegalArgumentException("No forbidden phrases supplied.");
         }
     }
 
 
+    private static List<ForbiddenPhrase> readForbiddenPhrases() throws IOException, URISyntaxException {
+        Path phrasesPath = forbiddenPhrasesPath == null ?
+                Paths.get((Config.class.getResource("/" + FORBIDDEN_LIST_DEFAULT).toURI())) :
+                Paths.get(forbiddenPhrasesPath);
 
-    private static List<ForbiddenPhrase> readForbiddenPhrases() throws IOException {
-        List<ForbiddenPhrase> phrases = new ArrayList<>();
-        try(BufferedReader forbiddenPhrasesReader = (forbiddenPhrasesPath != null)
-                ? Files.newBufferedReader(Paths.get(forbiddenPhrasesPath), forbiddenPhrasesCharset)
-                : new BufferedReader(new InputStreamReader(Config.class.getResourceAsStream("/" + FORBIDDEN_LIST_DEFAULT), forbiddenPhrasesCharset))) {
+        List<ForbiddenPhrase> words = Files.readAllLines(phrasesPath)
+                .stream()
+                .filter(s -> !s.isEmpty())
+                .map(s -> new ForbiddenPhrase(s))
+                .collect(Collectors.toList());
 
-            String phrase;
-            while((phrase = forbiddenPhrasesReader.readLine()) != null) {
-                if(!phrase.trim().isEmpty()) {
-                    phrases.add(new ForbiddenPhrase(phrase));
-                }
-            }
-        }
-        return unmodifiableList(phrases);
+        return unmodifiableList(words);
     }
 
 
@@ -130,7 +121,7 @@ public class Config {
         System.out.println("  l/lock : lock session at startup");
         System.out.println("  o/os=<os> : force the os, available values are: "
                 + stream(Os.values()).map(Os::name).collect(joining(", ", "[", "]")));
-        System.out.println("  r/relax=<true/false> : pattern matching is more lenient, default false");
+        System.out.println("  strict=<true/false> : pattern matching must match exactly, default false");
         System.out.println("  s/simu : log instead of locking");
     }
 
@@ -142,8 +133,8 @@ public class Config {
         return testSessionLocking;
     }
 
-    public static boolean isRelax() {
-        return relax;
+    public static boolean isStrict() {
+        return strict;
     }
 
     public static boolean isSimulation() {
