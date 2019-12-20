@@ -9,7 +9,7 @@ public class ChocoratageException extends RuntimeException {
         super(message, cause);
     }
 
-    public ChocoratageException(Exception e) {
-        super (e);
+    public ChocoratageException(Throwable cause) {
+        super (cause);
     }
 }
