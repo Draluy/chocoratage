@@ -12,11 +12,13 @@ import static fr.raluy.chocoratage.ProcessLauncher.runProcessAndOutput;
 
 public enum LockMethod {
 
+    /**
+     * Ubuntu Gnome, Fedora Gnome, Debian Cinnamon, openSUSE
+     * Also read this variant online: $!(sleep 10s ;  xset dpms force suspend) & xdg-screensaver lock
+     */
     XDG_SCREENSAVER {
         public void lock() {
 
-            // Ubuntu Gnome, Fedora Gnome, Debian Cinnamon, openSUSE
-            // Also read this variant online: $!(sleep 10s ;  xset dpms force suspend) & xdg-screensaver lock
             runProcessAndOutput("xdg-screensaver", "lock");
         }
     },
@@ -92,15 +94,15 @@ public enum LockMethod {
 
 
     public static LockMethod guess(Os os) {
-        if (!os.isLockMethodKnown()) {
+        if (os.isLockMethodKnown()) {
+            return os.getDefaultLockMethod();
+        } else {
             String desktopEnvironment = Os.getDesktopEnvironment();
             if (XFCE.equals(desktopEnvironment)) {
                 return CTRL_ALT_L;
             } else {
                 return XDG_SCREENSAVER;
             }
-        } else {
-            return os.getDefaultLockMethod();
         }
     }
 
