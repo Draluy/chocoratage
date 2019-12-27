@@ -36,7 +36,7 @@ public class SessionLocker implements Runnable {
     @Override
     public void run() {
         if (Config.isDebugMode()) {
-            log.info("Running lock method {}", lockMethod.name());
+            log.info("Triggering lock method {}", lockMethod.name());
         }
 
         if(Config.isSimulation()) {
