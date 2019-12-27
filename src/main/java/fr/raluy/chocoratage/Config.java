@@ -1,15 +1,16 @@
 package fr.raluy.chocoratage;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.lang.Boolean.parseBoolean;
 import static java.util.Arrays.asList;
@@ -98,18 +99,20 @@ public class Config {
     }
 
 
-    private static List<ForbiddenPhrase> readForbiddenPhrases() throws IOException, URISyntaxException {
-        Path phrasesPath = forbiddenPhrasesPath == null ?
-                Paths.get((Config.class.getResource("/" + FORBIDDEN_LIST_DEFAULT).toURI())) :
-                Paths.get(forbiddenPhrasesPath);
+    private static List<ForbiddenPhrase> readForbiddenPhrases() throws IOException {
+        List<ForbiddenPhrase> phrases = new ArrayList<>();
+        try(BufferedReader forbiddenPhrasesReader = (forbiddenPhrasesPath != null)
+                ? Files.newBufferedReader(Paths.get(forbiddenPhrasesPath), forbiddenPhrasesCharset)
+                : new BufferedReader(new InputStreamReader(Config.class.getResourceAsStream("/" + FORBIDDEN_LIST_DEFAULT), forbiddenPhrasesCharset))) {
 
-        List<ForbiddenPhrase> words = Files.readAllLines(phrasesPath)
-                .stream()
-                .filter(s -> !s.isEmpty())
-                .map(s -> new ForbiddenPhrase(s))
-                .collect(Collectors.toList());
-
-        return unmodifiableList(words);
+            String phrase;
+            while((phrase = forbiddenPhrasesReader.readLine()) != null) {
+                if(!phrase.trim().isEmpty()) {
+                    phrases.add(new ForbiddenPhrase(phrase));
+                }
+            }
+        }
+        return unmodifiableList(phrases);
     }
 
 
