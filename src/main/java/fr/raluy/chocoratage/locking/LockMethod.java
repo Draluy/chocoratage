@@ -85,7 +85,7 @@ public enum LockMethod {
     OSX {
         @Override
         public void lock() {
-            runProcessAndOutput("/System/Library/CoreServices/Menu\\ Extras/user.menu/Contents/Resources/CGSession -suspend");
+            runProcessAndOutput("/System/Library/CoreServices/Menu Extras/user.menu/Contents/Resources/CGSession", "-suspend");
         }
     };
 
