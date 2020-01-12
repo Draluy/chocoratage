@@ -108,10 +108,6 @@ Nous avons testé et câblé un vérouillage efficace sur des VMs ou du matérie
 - OSX Mojave 10.14.6
 - OSX Catalina 10.15.2
 
-### BSD
-- FreeBSD 12.1
-- FreeBSD 12.1
-
 ### Solaris
 - Solaris 10
 - Solaris 11.4 (Gnome & xterm)
@@ -120,7 +116,8 @@ Nous avons testé et câblé un vérouillage efficace sur des VMs ou du matérie
 * Obviously plenty of other distributions will also work (eg other Fedora's, Debian's, Windows 8, OSX Mavericks, El Capitan, etc...).
 * That said, OSX Catalina terrible security policy makes it hard to merely run java, there's so uch we can do about it...
 * By the way, for the lock screen to actually protect you on OSX, you must go to the "Security & Privacy" settings and select "Require password *immediately* after sleep or screensaver begins   
-* It's hard to find a one-size-fits-all recipe to Arch Linux but let's hope for the best. If your favorite WM isn't supported, just open a ticket. Or get a life :)  
+* It's hard to find a one-size-fits-all recipe to Arch Linux but let's hope for the best. If your favorite WM isn't supported, just open a ticket. Or get a life :)
+* Although we tested FreeBSD 11.2 and 12.1 which both have a straightforward way to lock a session (xlock), jnativehook, our keylogger lib doesn't support that OS, hence we won't either.  
 * We don't support any OS anterior to the release of the JDK 8.  
 * We don't support AIX as it's a dying OS and we doubt anyone still using it has ever heard of chocoblasts, duh!  
 
@@ -128,7 +125,8 @@ Nous avons testé et câblé un vérouillage efficace sur des VMs ou du matérie
 * De toute évidence, de nombreuses autres distributions sont également compatibles (ex:, d'autres Fedora, Debian, Windows 8, OSX Mavericks, El Capitan, etc ...).
 * Cela dit, OSX Catalina a une politique de sécurité horrible qui rendra même l'exécution de java difficile. Nous n'y pouvons pas grand-chose...
 * D'ailleurs, pour que l'écran de verrouillage vous protège réellement sur OSX, vous devez aller dans les paramètres "Sécurité et confidentialité" et sélectionner "Mot de passe requis * immédiatement * après le début de la mise en veille ou de l'économiseur d'écran"    
-* Il est difficile de trouver une recette unique pour Arch Linux, espérons que ça ira. Si votre WM préférée n'est pas prise en charge, ouvrez simplement un ticket. Ou ayez une vie :)  
+* Il est difficile de trouver une recette unique pour Arch Linux, espérons que ça ira. Si votre WM préférée n'est pas prise en charge, ouvrez simplement un ticket. Ou ayez une vie :)
+* Bien que nous ayons testé FreeBSD 11.2 et 12.1 qui ont tous les deux un moyen simple de verrouiller une session (xlock), jnativehook, notre lib de keylogger externe, ne prend pas en charge ce système d'exploitation, donc ne pourrons supporter cet OS.  
 * Nous ne prenons en charge aucun système d'exploitation antérieur à la sortie du JDK 8.  
 * Nous ne prenons pas en charge AIX car c'est un système d'exploitation mourant et nous doutons que quiconque l'utilisant encore ait jamais entendu parler de chocoblastes, aha!  
 
