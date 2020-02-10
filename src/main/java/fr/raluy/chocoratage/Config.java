@@ -7,10 +7,12 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.lang.Boolean.parseBoolean;
 import static java.util.Arrays.asList;
@@ -104,7 +106,6 @@ public class Config {
         try(BufferedReader forbiddenPhrasesReader = (forbiddenPhrasesPath != null)
                 ? Files.newBufferedReader(Paths.get(forbiddenPhrasesPath), forbiddenPhrasesCharset)
                 : new BufferedReader(new InputStreamReader(Config.class.getResourceAsStream("/" + FORBIDDEN_LIST_DEFAULT), forbiddenPhrasesCharset))) {
-
             String phrase;
             while((phrase = forbiddenPhrasesReader.readLine()) != null) {
                 if(!phrase.trim().isEmpty()) {
