@@ -7,7 +7,6 @@ import org.jnativehook.keyboard.NativeKeyListener;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 public class KeyLogger implements NativeKeyListener {
@@ -19,6 +18,7 @@ public class KeyLogger implements NativeKeyListener {
     public KeyLogger() {
         try {
             GlobalScreen.registerNativeHook();
+            //GlobalScreen.setEventDispatcher(new DefaultDispatchService()); // https://github.com/kwhat/jnativehook/issues/277
             GlobalScreen.addNativeKeyListener(this);
         } catch (NativeHookException e) {
             String errMsg = "Impossible to register listening hook";
@@ -27,38 +27,44 @@ public class KeyLogger implements NativeKeyListener {
         }
     }
 
+    /**
+     * keyCode is defined here, not keyChar
+     * @param nativeKeyEvent
+     */
+    @Override
+    public void nativeKeyPressed(NativeKeyEvent nativeKeyEvent) {}
+
+    /**
+     * keyChar is defined here, not keyCode
+     * Thankfully for us, backspace is a CHARACTER (ASCII control BS = 8),
+     * else we would have to identify it in nativeKeyPressed (nativeKeyEvent.getKeyCode() == NativeKeyEvent.VC_BACKSPACE)
+     * and we wouldn't be able to filter it out here
+     * @param nativeKeyEvent
+     */
     @Override
     public void nativeKeyTyped(NativeKeyEvent nativeKeyEvent) {
+        char keyChar = nativeKeyEvent.getKeyChar();
+        log.debug("TYPED code: {} / char: {} ({})", nativeKeyEvent.getKeyCode(), keyChar, (int)keyChar);
+        if(!nativeKeyEvent.isActionKey()) { // Caution: BACKSPACE, DELETE, ESCAPE, ENTER, TAB are NOT action keys, they are control CHARS!
+            boolean bufferChanged = buffer.submitChar(keyChar);
 
+            if (Config.isDebugMode()) {
+                log.info("Buffer state = {}", buffer);
+            }
+
+            if (bufferChanged && buffer.containsIgnoreCase(Config.getForbiddenPhrases())) {
+                buffer.clear();
+                listeners.forEach(Runnable::run);
+            }
+        }
     }
 
+    /**
+     * keyCode is defined here, not keyChar
+     * @param nativeKeyEvent
+     */
     @Override
-    public void nativeKeyPressed(NativeKeyEvent nativeKeyEvent) {
-
-        getIfNiceKey(nativeKeyEvent)
-                .ifPresent(keyEvent -> buffer.add(keyEvent));
-
-        if (Config.isDebugMode()) {
-            log.info("Buffer state = " + buffer.toString());
-        }
-
-        if (buffer.containsIgnoreCase(Config.getForbiddenPhrases())) {
-            buffer.clear();
-            listeners.forEach(Runnable::run);
-        }
-    }
-
-    private Optional<NativeKeyEvent> getIfNiceKey(NativeKeyEvent nativeKeyEvent) {
-        if (nativeKeyEvent == null || nativeKeyEvent.isActionKey()) {
-            return Optional.empty();
-        }
-        return Optional.of(nativeKeyEvent);
-    }
-
-    @Override
-    public void nativeKeyReleased(NativeKeyEvent nativeKeyEvent) {
-
-    }
+    public void nativeKeyReleased(NativeKeyEvent nativeKeyEvent) {}
 
     public void addListener(Runnable function) {
         listeners.add(function);

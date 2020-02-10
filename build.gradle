@@ -6,14 +6,22 @@ group 'fr.raluy'
 version '1.0-SNAPSHOT'
 
 // very common version + freebsd doesn't support later than openjdk8: https://www.freebsd.org/java/
-sourceCompatibility = 1.8
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 dependencies {
-    compile 'com.1stleg:jnativehook:2.1.0'
+    compile 'com.1stleg:jnativehook:2.1.1-SNAPSHOT'// snap due to https://github.com/kwhat/jnativehook/issues/170 still open as of 2020-01-12
     compile 'org.slf4j:slf4j-api:1.7.29'
     compile 'org.slf4j:slf4j-simple:1.7.29'
     testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.5.2'
