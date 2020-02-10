@@ -5,7 +5,7 @@
 In the French computer science sphere, we have two bright ideas colliding:
 * There's two different words for the famous chocolate bread pastry: [_"pain au chocolat"_](https://en.wikipedia.org/wiki/Pain_au_chocolat) and [_"chocolatine"_](https://en.wikipedia.org/wiki/Pain_au_chocolat) depending which area you're from (plus _"couque au chocolat"_ in Beglium and _"croissant au chocolat"_ in Québec) and the battle is raging HARD!   
 The split is analyzed [here](https://blog.adrienvh.fr/2012/10/16/cartographie-des-resultats-de-chocolatine-ou-pain-au-chocolat/) and [here](http://theconversation.com/pain-au-chocolat-vs-chocolatine-fight-85923).
-* If you leave your computer unattended without locking it, the odds are that someone is gonna send a message or an email to the whole company saying you'll bring breakfast for everyone the next day. And obviously you'll bring chocolate breads amongst other viennoiseries...That's called a **"chocoblast"**!
+* If you leave your computer unattended without locking it, the odds are that someone is gonna send a message or an email to the whole company saying you'll bring breakfast for everyone the next day. And obviously you'll bring chocolate breads amongst other viennoiseries...That office prank is called a **"chocoblast"**!
 There's even [a bloody website](https://www.chocoblast.fr/) dedicated to it.
 
 Isn't that great to tell everyone you'll bring _"chocolatines"_ the next day whereas you're writing from the computer of someone who was bred with _"pains au chocolat"_ ?
