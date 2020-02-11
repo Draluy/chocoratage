@@ -10,10 +10,13 @@ import java.util.stream.IntStream;
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * This file MUST be encoded in unicode due to the use of non-latin chars
+ */
 public class KeysBufferTest {
     public static final String ONE_HUNDRED_CHARS_UPPER = "THISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOTTHISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOT1234";
     public static final String ONE_HUNDRED_CHARS_LOWER = ONE_HUNDRED_CHARS_UPPER.toLowerCase();
-    KeyBuffer keysBuffer = new KeyBuffer(true);
+    KeyBuffer keysBuffer = new KeyBuffer(false);
 
     @Test
     public void shouldBeEmptyAtFirst() {
@@ -30,15 +33,52 @@ public class KeysBufferTest {
     @Test
     public void shouldAddStringToBuffer() {
         addStringToBuffer("TEST ");
-        addStringToBuffer("HAVE");
+        addStringToBuffer("HAS\t\n");
+        addStringToBuffer("FOUR\f ");
+        addStringToBuffer("WORDS");
 
-        assertThat(keysBuffer.toString()).isEqualTo("test have");
+        assertThat(keysBuffer.toString()).isEqualTo("test has four words");
     }
 
     @Test
-    public void shouldNotAddNull() {
-        addStringToBuffer("TEST");
-        keysBuffer.add(null);
+    public void shouldAddAccentedCharacters() {
+        addStringToBuffer("TEST ÉùàçØöğ");
+        assertThat(keysBuffer.toString()).isEqualTo("test éùàçøöğ");
+    }
+
+    @Test
+    public void shouldAddNonLatinStringToBuffer() {
+        addStringToBuffer("La"); // Latin
+        addStringToBuffer("αΨ"); // Greek
+        addStringToBuffer("Жц"); // Cyrillic
+        addStringToBuffer("թխ"); // Armenian
+        addStringToBuffer("جؼ"); // Arabic
+        addStringToBuffer("שמ"); // Hebrew
+        addStringToBuffer("葵袷"); // Kanji
+        addStringToBuffer("ばふ"); // Hiragana
+        addStringToBuffer("하함"); // Korean
+        addStringToBuffer("腌盒"); // Chinese
+        addStringToBuffer("༺༪"); // Tibetan
+        addStringToBuffer("บพ"); // Thai
+        addStringToBuffer("ങജ"); // Malayalam
+        addStringToBuffer("ছয়"); // Bengali
+        addStringToBuffer("ఞఌ"); // Telugu
+        assertThat(keysBuffer.toString()).isEqualTo("laαψжцթխجؼשמ葵袷ばふ하함腌盒บพങജছয়ఞఌ");
+    }
+
+    @Test
+    public void shouldNotAddNonLetterOrDigit() {
+        addStringToBuffer("♥♥♥");
+        addStringToBuffer("LOVE");
+        addStringToBuffer("♥♥♥");
+        addStringToBuffer("&\"'(-_)=~#{[|`\\^@]}£$¤+-*/=!?,;.:/§<>");
+        assertThat(keysBuffer.toString()).isEqualTo("love");
+    }
+
+    @Test
+    public void shouldAllowBackspace() {
+        addStringToBuffer("TEST0");
+        keysBuffer.submitChar('\b');
 
         assertThat(keysBuffer.toString()).isEqualTo("test");
     }
@@ -116,15 +156,14 @@ public class KeysBufferTest {
 
 
     private void addStringToBuffer(String str) {
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i); //magic offset
-            keysBuffer.add(createNativeKeyEvent(c));
+        for (char c : str.toCharArray()) {
+            keysBuffer.submitChar(c);
         }
     }
 
     private void addNChars(int n) {
         IntStream.range(0, n)
-                .forEach(i -> keysBuffer.add(createNativeKeyEvent(NativeKeyEvent.VC_A)));
+                .forEach(i -> keysBuffer.submitChar('A'));
     }
 
     private NativeKeyEvent createNativeKeyEvent(int keyCode) {

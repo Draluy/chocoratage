@@ -68,7 +68,7 @@ public enum Os {
     public static final String ENV_DESKTOP = "XDG_CURRENT_DESKTOP";
     public static final String ENV_SESSION = "GDMSESSION";
 
-    private String[] names;
+    private final String[] names;
 
 
     Os(String... names) {

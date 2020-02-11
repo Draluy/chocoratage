@@ -1,7 +1,6 @@
 package fr.raluy.chocoratage;
 
-import org.jnativehook.keyboard.NativeKeyEvent;
-
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -37,49 +36,99 @@ public class KeyBuffer {
      * Adds a char at the end of the string, and evicts first chars of the string to
      * reduce the string to a maximum of MAX_SIZE characters
      *
-     * @param keyEvent the char to append to the end
+     * The method accepts backspace and all sorts
+     * Read this too https://docs.oracle.com/javase/tutorial/java/data/characters.html
+     *
+     * @param keyChar the char to append to the end
+     * @return true if the buffer has changed
      */
-    public synchronized void add(NativeKeyEvent keyEvent) {
-        if (keyEvent == null) {
-            return;
+    public synchronized boolean submitChar(char keyChar) {
+        if (append(keyChar)) {
+            return true;
         }
+        else if (isBackspace(keyChar)) {
+            return backspace();
+        }
+        // TODO how to handle DEL? Maybe only after arrows have been pressed? Not from here anyway as arrows are not chars.
+        else if (isControlCharOrSpace(keyChar)) { // space, tab, newline...let's start a new word
+            newWord(); // currentWord contents is moving to the previousWords but the buffer remains the same => return false
+        }
+        // else might be &"'(-_)=~#{[|`\^@]}£$¤+-*/=!?,;.:/§<> and others => ignoring
+        return false;
+        // TODO handle paste the best we can
+    }
 
-        int currentSize = currentWord.length();
-        if (isLetterOrDigit(keyEvent)) {
-            String keyText = keyEvent.getKeyText(keyEvent.getKeyCode()); // FIXME "é" is appended as "2" on a FR keyboard
-            currentWord.append(keyText.toLowerCase());
+    /**
+     * Appends a letter or digit character to the buffer
+     * @param keyChar
+     * @return true if the buffer changed or false as the character was neither a letter nor a digit and couldn't be appended
+     */
+    public boolean append(char keyChar) {
+        boolean result;
+        if (result = isLetterOrDigit(keyChar)) {
+            currentWord.append(Character.toLowerCase(keyChar));
 
+            int currentSize = currentWord.length();
             if (currentSize > MAX_WORD_SIZE) {
                 currentWord.delete(0, currentSize - MAX_WORD_SIZE); //cut the buffer back to MAX_SIZE chars
             }
-        } else if (isBackspace(keyEvent)) {
-            if (isCurrentWordExists()) {
-                currentWord.delete(currentSize - 1, currentSize);
-            }
-        } else if (isCurrentWordExists()) { // let's start a new word
+        }
+        return result;
+    }
+
+    /**
+     * Removes the trailing char of the buffer.
+     * of course this way of working won't work correctly if someone types in 2 separators then backspaces twice => one character too many is removed
+     * @return true if the buffer changed
+     */
+    public boolean backspace() {
+        if (isCurrentWordExists()) {
+            int currentSize = currentWord.length();
+            currentWord.delete(currentSize - 1, currentSize);
+        }
+        else if(!previousWords.isEmpty()) { // here currentWord has already a zero-length
+            String previousWord = previousWords.removeLast();
+            currentWord.append(previousWord, 0, previousWord.length()-1);
+        } else {
+            return false;
+        }
+        return true;
+    }
+
+    public void newWord() {
+        if (isCurrentWordExists()) {
             if (previousWords.size() == MAX_WORDS) {
                 previousWords.removeFirst();
             }
             previousWords.add(currentWord.toString());
             currentWord.setLength(0);
         }
-        // TODO handle paste the best we can
     }
 
-    private boolean isBackspace(NativeKeyEvent keyEvent) {
-        return keyEvent.getKeyCode() == NativeKeyEvent.VC_BACKSPACE;
+    /**
+     * @param keyChar
+     * @return
+     */
+    public static boolean isLetterOrDigit(char keyChar) {
+        return Character.isLetterOrDigit(keyChar);
     }
 
-    private boolean isLetterOrDigit(NativeKeyEvent keyEvent) {
-        if (keyEvent.isActionKey()) {
-            return false;
-        }
+    public static boolean isBackspace(char keyChar) {
+        return keyChar == KeyEvent.VK_BACK_SPACE; // NOT NativeKeyEvent.VC_BACKSLASH, because we are dealing with a key char here (\b == 8), NOT a key code (0x000E)
+    }
 
-        String keyText = NativeKeyEvent.getKeyText(keyEvent.getKeyCode());
+    /**
+     * http://www.physics.udel.edu/~watson/scen103/ascii.html
+     *
+     * @param keyChar
+     * @return true if the input char is in the range [0x00-0x1F] or DEL (0x7F) or space (0x20)
+     */
+    public static boolean isControlCharOrSpace(char keyChar) {
+        return keyChar <= ' ' || isDelete(keyChar);
+    }
 
-        if (keyText.length() > 1) {
-            return false;
-        } else return Character.isLetterOrDigit(keyText.codePointAt(0));
+    public static boolean isDelete(char keyChar) {
+        return keyChar == KeyEvent.VK_DELETE; // NOT NativeKeyEvent.VC_DELETE, because we are dealing with a key char here (0x7F), NOT a key code (0x0E53)
     }
 
 
@@ -114,7 +163,7 @@ public class KeyBuffer {
         return result;
     }
 
-    private int getWordCount() {
+    public int getWordCount() {
         return previousWords.size() + (isCurrentWordExists() ? 1 : 0);
     }
 
