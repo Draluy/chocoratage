@@ -20,16 +20,16 @@ In french, _"to miss"_ is the verb _"rater"_, hence we counter attack the _"choc
 ##### Français
 Dans le petit monde de l'informatique française, nous faisons face à deux brillants concepts:
 * Il y a deux mots différents pour désigner la viennoiserie contenant une barre de chocolat: [_"pain au chocolat"_](https://fr.wikipedia.org/wiki/Pain_au_chocolat) et [_"chocolatine"_](https://fr.wikipedia.org/wiki/Pain_au_chocolat) selon la région d'où vous venez (plus _"couque au chocolat"_ en Beglique et _"croissant au chocolat"_ au Québec) et la bataille fait rage SANS AUCUNE PITIÉ!  
-La scission est analysée [ici] (https://blog.adrienvh.fr/2012/10/16/cartographie-des-resultats-de-chocolatine-ou-pain-au-chocolat/) et [ici] (http: //theconversation.com/pain-au-chocolat-vs-chocolatine-fight-85923).  
+La scission est analysée [ici](https://blog.adrienvh.fr/2012/10/16/cartographie-des-resultats-de-chocolatine-ou-pain-au-chocolat/) et [ici](http://theconversation.com/pain-au-chocolat-vs-chocolatine-fight-85923).  
 * Si vous laissez votre ordinateur sans surveillance sans le verrouiller, il y a de fortes chances que quelqu'un envoie un message ou un e-mail à toute l'entreprise disant que vous apporterez le petit-déjeuner pour tout le monde le lendemain. Et évidemment, vous apporterez des chocolatines/pains au chocolat entre autres viennoiseries ... Cela s'appelle un ** "chocoblast" **!  
-Il y a même [un putain de site] (https://www.chocoblast.fr/) qui lui est dédié.
+Il y a même [un putain de site](https://www.chocoblast.fr/) qui lui est dédié.
 
 N'est-ce pas formidable d'écrire à tout le monde que vous apporterez des _"chocolatines"_ le lendemain alors que vous écrivez depuis l'ordinateur de quelqu'un qui a été élevé à coup de fournées de _"pains au chocolat"_?
 
 Peut-être, dans une certaine mesure: même si nous pouvons comprendre que laisser son ordinateur sans surveillance peut poser un problème de sécurité, et bien que nous nous soyons nous-mêmes faits avoir de manière bienveillante, en mode bizutage, il est malheureusement des entreprises qui l'utilisent pour répandre la terreur!  
 Des entreprises qui vous expliquent le jour-même de votre intégration qu'elles soutiennent activement le chocoblast! Et qui ont toute une théorie à ce sujet au point que vous ne pouvez pas les convaincre que c'est un peu limite d'être chocoblasté alors que vous êtes toujours assis sur votre chaise et que vous vous êtes juste détourné de votre clavier pour poser une question au collègue d'à côté, et qu'il n'y a personne d'extérieur aux alentours...  
 ... et encore c'est gentillet quand on a aussi vu des cas où les gens vous blastent en écrivant des choses incongrues sur vos réseaux sociaux!  
-ON EN A ASSEZ DE CES CRETINS !!!!
+ON EN A ASSEZ DE CES CRÉTINS !!!!
 
 Donc on contre-attaque le _"chocoblastage"_ avec ce projet: _"chocoratage"_.
 
