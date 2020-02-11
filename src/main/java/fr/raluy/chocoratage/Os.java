@@ -88,6 +88,18 @@ public enum Os {
     }
 
 
+    public static String[] getOsInfos() {
+        return new String[]{
+                "OS Type: " + getOsType(),
+                "OS Name: " + getOsName(),
+                "OS Version: " + getOsVersion(),
+                "OS Version ID: " + getOsVersionId(),
+                "OS Arch: " + getOsArch(),
+                "Desktop Env: " + getDesktopEnvironment(),
+                "GDM Session: " + getGdmSession()
+        };
+    }
+
     /**
      * @return "Linux", "FreeBSD", "Mac OSX", "SunOS", "Windows <version>"...
      */

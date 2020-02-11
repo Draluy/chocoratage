@@ -1,11 +1,9 @@
 package fr.raluy.chocoratage.locking;
 
-import fr.raluy.chocoratage.ChocoratageException;
 import fr.raluy.chocoratage.Os;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
 import java.util.stream.IntStream;
 
 import static fr.raluy.chocoratage.ProcessLauncher.runProcessAndOutput;
@@ -30,7 +28,7 @@ public enum LockMethod {
      */
     GNOME_SESSION_QUIT {
         @Override
-        void lock() {
+        public void lock() {
             runProcessAndOutput("gnome-session-quit --no-prompt");
         }
     },
@@ -40,7 +38,7 @@ public enum LockMethod {
      */
     DBUS_SEND {
         @Override
-        void lock() {
+        public void lock() {
             runProcessAndOutput("dbus-send --type=method_call --dest=org.gnome.ScreenSaver", "/org/gnome/ScreenSaver", "org.gnome.ScreenSaver.Lock");
         }
     },
@@ -63,7 +61,7 @@ public enum LockMethod {
      */
     CTRL_ALT_L {
         @Override
-        void lock() {
+        public void lock() {
             robotTyping(KeyEvent.VK_CONTROL, KeyEvent.VK_ALT, KeyEvent.VK_L);
         }
     },
@@ -106,7 +104,7 @@ public enum LockMethod {
         }
     }
 
-    private static void robotTyping(int... keys) {
+    public static void robotTyping(int... keys) {
         try {
             Robot robot = new Robot();
             IntStream.of(keys).forEach(robot::keyPress);
@@ -119,5 +117,5 @@ public enum LockMethod {
         }
     }
 
-    abstract void lock();
+    public abstract void lock();
 }

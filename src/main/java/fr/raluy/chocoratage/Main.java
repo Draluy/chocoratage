@@ -39,13 +39,9 @@ public class Main {
     }
 
     private static void displayOsInfo() {
-        log.info("OS Type: {}", Os.getOsType());
-        log.info("OS Name: {}", Os.getOsName());
-        log.info("OS Version: {}", Os.getOsVersion());
-        log.info("OS Version ID: {}", Os.getOsVersionId());
-        log.info("OS Arch: {}", Os.getOsArch());
-        log.info("Desktop Env: {}", Os.getDesktopEnvironment());
-        log.info("GDM Session: {}", Os.getGdmSession());
+        for(String info : Os.getOsInfos()) {
+            log.info(info);
+        }
     }
 
     private static void configureJNativeHookLogger() {
