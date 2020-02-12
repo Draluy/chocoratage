@@ -29,7 +29,7 @@ public class Main {
 
         if (Config.isDebugMode()) {
             log.info("OS set to {}", os);
-            log.info("Forbidden phrases:", os);
+            log.info("Forbidden phrases:");
             Config.getForbiddenPhrases().forEach(fph -> log.info("* {}", fph.getPhraseLower()));
         }
 
