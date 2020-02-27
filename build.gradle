@@ -16,6 +16,9 @@ tasks.withType(JavaCompile) {
 }
 
 repositories {
+    flatDir {
+        dirs 'libs'
+    }
     mavenCentral()
     mavenLocal()
 }
@@ -33,11 +36,13 @@ test {
 }
 
 jar {
+    jar.archiveName("chocoratage.jar")
     manifest {
-        attributes 'Main-Class': 'fr.raluy.chocoratage.Main'
+        attributes "Main-Class": 'fr.raluy.chocoratage.Main'
     }
+
     from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
-    jar.archiveName = 'chocoratage.jar'
 }
+

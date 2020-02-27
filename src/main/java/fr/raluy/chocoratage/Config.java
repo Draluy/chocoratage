@@ -101,12 +101,12 @@ public class Config {
 
     private static List<ForbiddenPhrase> readForbiddenPhrases() throws IOException {
         List<ForbiddenPhrase> phrases = new ArrayList<>();
-        try(BufferedReader forbiddenPhrasesReader = (forbiddenPhrasesPath != null)
+        try (BufferedReader forbiddenPhrasesReader = (forbiddenPhrasesPath != null)
                 ? Files.newBufferedReader(Paths.get(forbiddenPhrasesPath), forbiddenPhrasesCharset)
                 : new BufferedReader(new InputStreamReader(Config.class.getResourceAsStream("/" + FORBIDDEN_LIST_DEFAULT), forbiddenPhrasesCharset))) {
             String phrase;
-            while((phrase = forbiddenPhrasesReader.readLine()) != null) {
-                if(!phrase.trim().isEmpty()) {
+            while ((phrase = forbiddenPhrasesReader.readLine()) != null) {
+                if (!phrase.trim().isEmpty()) {
                     phrases.add(new ForbiddenPhrase(phrase));
                 }
             }

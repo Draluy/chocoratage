@@ -8,8 +8,4 @@ public class ChocoratageException extends RuntimeException {
     public ChocoratageException(String message, Throwable cause) {
         super(message, cause);
     }
-
-    public ChocoratageException(Throwable cause) {
-        super (cause);
-    }
 }

@@ -96,13 +96,13 @@ public enum LockMethod {
     public static LockMethod guess(Os os) {
         if (os.isLockMethodKnown()) {
             return os.getDefaultLockMethod();
+        }
+
+        String desktopEnvironment = Os.getDesktopEnvironment();
+        if (XFCE.equals(desktopEnvironment)) {
+            return CTRL_ALT_L;
         } else {
-            String desktopEnvironment = Os.getDesktopEnvironment();
-            if (XFCE.equals(desktopEnvironment)) {
-                return CTRL_ALT_L;
-            } else {
-                return XDG_SCREENSAVER;
-            }
+            return XDG_SCREENSAVER;
         }
     }
 
