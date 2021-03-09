@@ -1,9 +1,9 @@
 package fr.raluy.chocoratage;
 
-import org.jnativehook.GlobalScreen;
-import org.jnativehook.NativeHookException;
-import org.jnativehook.keyboard.NativeKeyEvent;
-import org.jnativehook.keyboard.NativeKeyListener;
+import com.github.kwhat.jnativehook.GlobalScreen;
+import com.github.kwhat.jnativehook.NativeHookException;
+import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
+import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
@@ -13,7 +13,8 @@ public class KeyLogger implements NativeKeyListener {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(KeyLogger.class);
 
     private Set<Runnable> listeners = new HashSet<>();
-    private KeyBuffer buffer = new KeyBuffer(Config.isStrict());
+    private KeyBuffer buffer = new KeyBuffer();
+    private Matcher matcher = Config.getMatchingMode();
 
     public KeyLogger() {
         try {
@@ -52,7 +53,7 @@ public class KeyLogger implements NativeKeyListener {
                 log.info("Buffer state = {}", buffer);
             }
 
-            if (bufferChanged && buffer.containsIgnoreCase(Config.getForbiddenPhrases())) {
+            if (bufferChanged && matcher.matches(buffer, Config.getForbiddenPhrases())) {
                 buffer.clear();
                 listeners.forEach(Runnable::run);
             }

@@ -66,16 +66,16 @@ Evidemment, il n'est pas possible de lancer ce programme dans un Docker. Même s
 - **f/forbidden**=&lt;path&gt; : supply a list of forbidden phrases, one per line, each may have several words, to replace the default one / fournir une liste de termes interdits, un par ligne, pouvant comporter plusieurs mots chacun, pour remplacer celui par défaut. 
 - **l/lock** : lock session at startup / vérouille la session au démarrage
 - **o/os**=&lt;os&gt; : force the os, available values are / force l'os, valeurs aurorisées : LINUX, WINDOWS, OSX, FREEBSD, SOLARIS, AIX, OTHER_UNIX, UNKNOWN although only the first 5 ones are actually wired to trigger session locking / bien que seuls les 5 premiers soient câblés pour permettre le vérouillaage d'une session.  
-- **strict**=&lt;true/false&gt; : pattern matching must match exactly, default false / fait que la reconnaissance est stricte, faux par défaut. 
+- **m/mode**=&lt;equal/levenshtein/normalizer&gt; : matching algorithm, default is Levenshtein / algorithme de matching, Levenshtein par défaut
 - **s/simu** : log instead of locking / loggue au lieu de vérouiller la session.
 
 
 ## Compatibility / Compatibilité
 ##### English
-We tested and enabled an efficient locking on VMs or real hardware running the following OSes and distributions:
+In 2020 we tested and enabled an efficient locking on VMs or real hardware running the following OSes and distributions:
 
 ##### Français
-Nous avons testé et câblé un vérouillage efficace sur des VMs ou du matériel faisant tourner les OS et distributions suivants:
+En 2020 nous avons testé et câblé un vérouillage efficace sur des VMs ou du matériel faisant tourner les OS et distributions suivants:
 
 ### Linux
 - Chakra 2017.10
@@ -88,7 +88,7 @@ Nous avons testé et câblé un vérouillage efficace sur des VMs ou du matérie
 - Mageia 7.1
 - Manjaro-i3 18.14
 - Mint 19.2 (Cinnamon, Mate, xfce)
-- OpenMLandriva Lx 4.0 (Nitrogen)
+- OpenMandriva Lx 4.0 (Nitrogen)
 - OpenSuse LEAP 15.1
 - Ubuntu Utopic Unicorn 14.10 Unity
 - Ubuntu Xenial Xerus 16.04 LTS Unity
