@@ -3,7 +3,6 @@ package fr.raluy.chocoratage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -11,8 +10,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
-import static java.lang.Boolean.parseBoolean;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableList;
@@ -28,10 +27,10 @@ public class Config {
     private static boolean debugMode;
     private static boolean testSessionLocking;
     private static Os forcedOs;
-    private static boolean strict;
+    private static Matcher matcher;
     private static boolean simulation;
 
-    public static void parse(String... args) throws IOException, URISyntaxException {
+    public static void parse(String... args) throws IOException {
         Iterator<String> it = asList(args).listIterator();
         if (!it.hasNext()) {
             help();
@@ -79,8 +78,9 @@ public class Config {
                     forcedOs = Os.valueOf(value.toUpperCase());
                     break;
 
-                case "strict":
-                    strict = value == null || parseBoolean(value);
+                case "m":
+                case "mode":
+                    matcher = Matcher.valueOf(value.toUpperCase());
                     break;
 
                 case "s":
@@ -96,10 +96,14 @@ public class Config {
         if ((forbiddenPhrases = readForbiddenPhrases()).isEmpty()) {
             throw new IllegalArgumentException("No forbidden phrases supplied.");
         }
+        if(matcher == null) {
+            matcher = Matcher.LEVENSHTEIN;
+        }
     }
 
 
     private static List<ForbiddenPhrase> readForbiddenPhrases() throws IOException {
+        Locale locale = null;
         List<ForbiddenPhrase> phrases = new ArrayList<>();
         try (BufferedReader forbiddenPhrasesReader = (forbiddenPhrasesPath != null)
                 ? Files.newBufferedReader(Paths.get(forbiddenPhrasesPath), forbiddenPhrasesCharset)
@@ -107,7 +111,7 @@ public class Config {
             String phrase;
             while ((phrase = forbiddenPhrasesReader.readLine()) != null) {
                 if (!phrase.trim().isEmpty()) {
-                    phrases.add(new ForbiddenPhrase(phrase));
+                    phrases.add(new ForbiddenPhrase(phrase, locale));
                 }
             }
         }
@@ -123,7 +127,7 @@ public class Config {
         System.out.println("  l/lock : lock session at startup");
         System.out.println("  o/os=<os> : force the os, available values are: "
                 + stream(Os.values()).map(Os::name).collect(joining(", ", "[", "]")));
-        System.out.println("  strict=<true/false> : pattern matching must match exactly, default false");
+        System.out.println("  m/mode=<equal/levenshtein/normalizer> : matching algorithm, default is Levenshtein");
         System.out.println("  s/simu : log instead of locking");
     }
 
@@ -135,8 +139,8 @@ public class Config {
         return testSessionLocking;
     }
 
-    public static boolean isStrict() {
-        return strict;
+    public static Matcher getMatchingMode() {
+        return matcher;
     }
 
     public static boolean isSimulation() {

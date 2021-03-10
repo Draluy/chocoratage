@@ -2,34 +2,25 @@ package fr.raluy.chocoratage;
 
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Predicate;
+import java.util.ListIterator;
 
-public class KeyBuffer {
-    public static final int MAX_WORDS = 10;
+import static java.lang.String.join;
+import static java.util.Collections.reverse;
+
+public class KeyBuffer implements CharacterSource {
+    private static final int MAX_WORDS = 10;
+    private static final int MAX_WORD_SIZE = 100;
+
     private final LinkedList<String> previousWords = new LinkedList<>();
-
-    private int MAX_WORD_SIZE = 100;
     private final StringBuilder currentWord = new StringBuilder(MAX_WORD_SIZE);
 
-    private final Predicate<ForbiddenPhrase> matchingPredicate;
 
-
-    private final Predicate<ForbiddenPhrase> levenshteinPredicate = (fp) -> {
-        String challenge = getLatestAsString(fp.getWordCount());
-        int challengeLength = challenge.length();
-        if (challengeLength <= 4 && challengeLength < fp.getPhraseLength()) { // to prevent borderline positives like "choc" for "choco" => will work for "choko" though
-            return false;
-        } else {
-            return Levenshtein.isThisSimilarEnoughToThat(fp.getPhraseLower(), challenge, false);
+    public void submitString(String str) {
+        for (char c : str.toCharArray()) {
+            submitChar(c);
         }
-    };
-    private final Predicate<ForbiddenPhrase> equalsPredicate = (fp) -> fp.getPhraseLower().equals(getLatestAsString(fp.getWordCount()));
-
-    public KeyBuffer(boolean strict) {
-        matchingPredicate = strict ? equalsPredicate : levenshteinPredicate;
     }
 
     /**
@@ -43,7 +34,7 @@ public class KeyBuffer {
      * @return true if the buffer has changed
      */
     public synchronized boolean submitChar(char keyChar) {
-        if (append(keyChar)) {
+        if (appendLetterOrDigit(keyChar)) {
             return true;
         }
         else if (isBackspace(keyChar)) {
@@ -63,9 +54,10 @@ public class KeyBuffer {
      * @param keyChar
      * @return true if the buffer changed or false as the character was neither a letter nor a digit and couldn't be appended
      */
-    public boolean append(char keyChar) {
-        boolean result;
-        if (result = isLetterOrDigit(keyChar)) {
+    public boolean appendLetterOrDigit(char keyChar) {
+        boolean result = isLetterOrDigit(keyChar);
+
+        if (result) {
             currentWord.append(Character.toLowerCase(keyChar));
 
             int currentSize = currentWord.length();
@@ -82,7 +74,7 @@ public class KeyBuffer {
      * @return true if the buffer changed
      */
     public boolean backspace() {
-        if (isCurrentWordExists()) {
+        if (isCurrentWordPresent()) {
             int currentSize = currentWord.length();
             currentWord.delete(currentSize - 1, currentSize);
         }
@@ -96,7 +88,7 @@ public class KeyBuffer {
     }
 
     public void newWord() {
-        if (isCurrentWordExists()) {
+        if (isCurrentWordPresent()) {
             if (previousWords.size() == MAX_WORDS) {
                 previousWords.removeFirst();
             }
@@ -132,39 +124,70 @@ public class KeyBuffer {
     }
 
 
-    public boolean containsIgnoreCase(Collection<ForbiddenPhrase> phrases) {
-        int wordCount = getWordCount();
-        return phrases.stream().filter(p -> p.getWordCount() <= wordCount).anyMatch(matchingPredicate);
+    @Override
+    public String getCurrentWord() {
+        return currentWord.toString();
     }
 
-    private boolean isCurrentWordExists() {
+    private boolean isCurrentWordPresent() {
         return currentWord.length() > 0;
     }
 
-    private String getLatestAsString(int c) {
-        return String.join(" ", getLatest(c));
+    @Override
+    public int getWordCount() {
+        return previousWords.size() + (isCurrentWordPresent() ? 1 : 0);
     }
 
-    private List<String> getLatest(int c) {
+    public List<String> getLatestWords(int neededWords) {
         int wordCount = getWordCount();
-        if (c > wordCount) {
-            throw new IllegalArgumentException("available: " + wordCount + ", requested: " + c);
+        if (neededWords > wordCount) {
+            throw new IllegalArgumentException("available words: " + wordCount + ", requested: " + neededWords);
         }
-        List<String> result = new ArrayList<>(c);
-        if (c > 0) {
+
+        List<String> result = new ArrayList<>(neededWords);
+        if (neededWords > 0) {
             int previousWordsSize = previousWords.size();
-            if (isCurrentWordExists()) {
-                result.addAll(previousWords.subList(previousWordsSize - c + 1, previousWordsSize));
+            if (isCurrentWordPresent()) {
+                result.addAll(previousWords.subList(previousWordsSize - neededWords + 1, previousWordsSize));
                 result.add(currentWord.toString());
             } else {
-                result.addAll(previousWords.subList(previousWordsSize - c, previousWordsSize));
+                result.addAll(previousWords.subList(previousWordsSize - neededWords, previousWordsSize));
             }
         }
         return result;
     }
 
-    public int getWordCount() {
-        return previousWords.size() + (isCurrentWordExists() ? 1 : 0);
+    @Override
+    public int getCharCount() {
+        return previousWords.stream().mapToInt(word -> word.length()).sum() + currentWord.length();
+    }
+
+    @Override
+    public List<String> getLatestChars(int neededChars) {
+        int charCount = getCharCount();
+        if(neededChars > charCount) {
+            throw new IllegalArgumentException("available chars: " + charCount + ", requested: " + neededChars);
+        }
+
+        List<String> result = new ArrayList<>();
+
+        if (isCurrentWordPresent()) {
+            String currentWord = getCurrentWord();
+            result.add(currentWord);
+            neededChars -= currentWord.length();
+        }
+
+        ListIterator<String> pwit = previousWords.listIterator(previousWords.size());
+        while (neededChars > 0) { // no need to check the iterator since we know neededChars <= charCount
+            String previousWord = pwit.previous();
+            neededChars -= previousWord.length();
+            if(neededChars < 0) {
+                previousWord = previousWord.substring(0, previousWord.length() + neededChars);
+            }
+            result.add(previousWord);
+        }
+        reverse(result);
+        return result;
     }
 
     public void clear() {
@@ -174,6 +197,6 @@ public class KeyBuffer {
 
     @Override
     public String toString() {
-        return getLatestAsString(getWordCount());
+        return join(" ", getLatestWords(getWordCount()));
     }
 }
