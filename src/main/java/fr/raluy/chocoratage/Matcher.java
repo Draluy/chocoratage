@@ -44,7 +44,7 @@ public enum Matcher {
 
 
   public static final int MIN_CHALLENGE_LENGTH = 4;
-  public static final int NORMALIZER_MAX_DISTANCE = 2;
+  public static final int NORMALIZER_MAX_DISTANCE = 1;
 
 
   public boolean matches(CharacterSource source, Collection<ForbiddenPhrase> fps) {
