@@ -1,7 +1,7 @@
 package fr.raluy.chocoratage;
 
 
-import org.jnativehook.keyboard.NativeKeyEvent;
+import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -9,14 +9,18 @@ import java.util.stream.IntStream;
 
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * This file MUST be encoded in unicode due to the use of non-latin chars
  */
-public class KeysBufferTest {
+public class LevenshteinBufferTest {
     public static final String ONE_HUNDRED_CHARS_UPPER = "THISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOTTHISLINEISONEHUNDREDCHARACTERSLONGBELIEVEITORNOT1234";
     public static final String ONE_HUNDRED_CHARS_LOWER = ONE_HUNDRED_CHARS_UPPER.toLowerCase();
-    KeyBuffer keysBuffer = new KeyBuffer(false);
+
+    KeyBuffer keysBuffer = new KeyBuffer();
+    Matcher matcher = Matcher.LEVENSHTEIN;
 
     @Test
     public void shouldBeEmptyAtFirst() {
@@ -25,59 +29,59 @@ public class KeysBufferTest {
 
     @Test
     public void shouldAddStringToEmptyBuffer() {
-        addStringToBuffer("TEST");
+        keysBuffer.submitString("TEST");
 
         assertThat(keysBuffer.toString()).isEqualTo("test");
     }
 
     @Test
-    public void shouldAddStringToBuffer() {
-        addStringToBuffer("TEST ");
-        addStringToBuffer("HAS\t\n");
-        addStringToBuffer("FOUR\f ");
-        addStringToBuffer("WORDS");
+    public void shouldAddStringsToBuffers() {
+        keysBuffer.submitString("TEST ");
+        keysBuffer.submitString("HAS\t\n");
+        keysBuffer.submitString("FOUR\f ");
+        keysBuffer.submitString("WORDS");
 
         assertThat(keysBuffer.toString()).isEqualTo("test has four words");
     }
 
     @Test
     public void shouldAddAccentedCharacters() {
-        addStringToBuffer("TEST ÉùàçØöğ");
+        keysBuffer.submitString("TEST ÉùàçØöğ");
         assertThat(keysBuffer.toString()).isEqualTo("test éùàçøöğ");
     }
 
     @Test
     public void shouldAddNonLatinStringToBuffer() {
-        addStringToBuffer("La"); // Latin
-        addStringToBuffer("αΨ"); // Greek
-        addStringToBuffer("Жц"); // Cyrillic
-        addStringToBuffer("թխ"); // Armenian
-        addStringToBuffer("جؼ"); // Arabic
-        addStringToBuffer("שמ"); // Hebrew
-        addStringToBuffer("葵袷"); // Kanji
-        addStringToBuffer("ばふ"); // Hiragana
-        addStringToBuffer("하함"); // Korean
-        addStringToBuffer("腌盒"); // Chinese
-        addStringToBuffer("༺༪"); // Tibetan
-        addStringToBuffer("บพ"); // Thai
-        addStringToBuffer("ങജ"); // Malayalam
-        addStringToBuffer("ছয়"); // Bengali
-        addStringToBuffer("ఞఌ"); // Telugu
+        keysBuffer.submitString("La"); // Latin
+        keysBuffer.submitString("αΨ"); // Greek
+        keysBuffer.submitString("Жц"); // Cyrillic
+        keysBuffer.submitString("թխ"); // Armenian
+        keysBuffer.submitString("جؼ"); // Arabic
+        keysBuffer.submitString("שמ"); // Hebrew
+        keysBuffer.submitString("葵袷"); // Kanji
+        keysBuffer.submitString("ばふ"); // Hiragana
+        keysBuffer.submitString("하함"); // Korean
+        keysBuffer.submitString("腌盒"); // Chinese
+        keysBuffer.submitString("༺༪"); // Tibetan
+        keysBuffer.submitString("บพ"); // Thai
+        keysBuffer.submitString("ങജ"); // Malayalam
+        keysBuffer.submitString("ছয়"); // Bengali
+        keysBuffer.submitString("ఞఌ"); // Telugu
         assertThat(keysBuffer.toString()).isEqualTo("laαψжцթխجؼשמ葵袷ばふ하함腌盒บพങജছয়ఞఌ");
     }
 
     @Test
     public void shouldNotAddNonLetterOrDigit() {
-        addStringToBuffer("♥♥♥");
-        addStringToBuffer("LOVE");
-        addStringToBuffer("♥♥♥");
-        addStringToBuffer("&\"'(-_)=~#{[|`\\^@]}£$¤+-*/=!?,;.:/§<>");
+        keysBuffer.submitString("♥♥♥");
+        keysBuffer.submitString("LOVE");
+        keysBuffer.submitString("♥♥♥");
+        keysBuffer.submitString("&\"'(-_)=~#{[|`\\^@]}£$¤+-*/=!?,;.:/§<>");
         assertThat(keysBuffer.toString()).isEqualTo("love");
     }
 
     @Test
     public void shouldAllowBackspace() {
-        addStringToBuffer("TEST0");
+        keysBuffer.submitString("TEST0");
         keysBuffer.submitChar('\b');
 
         assertThat(keysBuffer.toString()).isEqualTo("test");
@@ -85,7 +89,7 @@ public class KeysBufferTest {
 
     @Test
     public void shouldAllow100Chars() {
-        addStringToBuffer(ONE_HUNDRED_CHARS_UPPER + " ");
+        keysBuffer.submitString(ONE_HUNDRED_CHARS_UPPER + " ");
 
         assertThat(keysBuffer.toString()).hasSize(100);
         assertThat(keysBuffer.toString()).isEqualTo(ONE_HUNDRED_CHARS_LOWER);
@@ -93,8 +97,8 @@ public class KeysBufferTest {
 
     @Test
     public void shouldReplaceEndingCharsWhenFull() {
-        addStringToBuffer(ONE_HUNDRED_CHARS_UPPER);
-        addStringToBuffer("REPLACEMENT");
+        keysBuffer.submitString(ONE_HUNDRED_CHARS_UPPER);
+        keysBuffer.submitString("REPLACEMENT");
 
         assertThat(keysBuffer.toString()).hasSize(100);
         assertThat(keysBuffer.toString()).isEqualTo("nehundredcharacterslongbelieveitornotthislineisonehundredcharacterslongbelieveitornot1234replacement");
@@ -103,41 +107,41 @@ public class KeysBufferTest {
 
     @Test
     public void testContains() {
-        addStringToBuffer("HUNDRED ");
-        boolean result = keysBuffer.containsIgnoreCase(singleton(new ForbiddenPhrase("hundred")));
-        assertThat(result).isTrue();
+        keysBuffer.submitString("HUNDRED ");
+        boolean result = matcher.matches(keysBuffer, singleton(new ForbiddenPhrase("hundred")));
+        assertTrue(result);
 
-        addStringToBuffer("1234");
-        result = keysBuffer.containsIgnoreCase(singleton(new ForbiddenPhrase("1234")));
-        assertThat(result).isTrue();
+        keysBuffer.submitString("1234");
+        result = matcher.matches(keysBuffer, singleton(new ForbiddenPhrase("1234")));
+        assertTrue(result);
 
-        result = keysBuffer.containsIgnoreCase(singleton(new ForbiddenPhrase("hundred 1234")));
-        assertThat(result).isTrue();
+        result = matcher.matches(keysBuffer, singleton(new ForbiddenPhrase("hundred 1234")));
+        assertTrue(result);
     }
 
     @Test
     public void testDoesNotContain() {
-        addStringToBuffer(ONE_HUNDRED_CHARS_LOWER);
+        keysBuffer.submitString(ONE_HUNDRED_CHARS_LOWER);
 
-        boolean result = keysBuffer.containsIgnoreCase(singleton(new ForbiddenPhrase("eleven")));
-        assertThat(result).isFalse();
+        boolean result = matcher.matches(keysBuffer, singleton(new ForbiddenPhrase("eleven")));
+        assertFalse(result);
     }
 
     @Test
     public void testAddingSeveralSpacesShouldNotReplaceWords() {
-        addStringToBuffer("REPLACEMENT ");
-        addStringToBuffer(" ");
-        addStringToBuffer(";");
-        addStringToBuffer(" ");
-        addStringToBuffer(":");
-        addStringToBuffer("ADD");
+        keysBuffer.submitString("REPLACEMENT ");
+        keysBuffer.submitString(" ");
+        keysBuffer.submitString(";");
+        keysBuffer.submitString(" ");
+        keysBuffer.submitString(":");
+        keysBuffer.submitString("ADD");
 
         assertThat(keysBuffer.toString()).isEqualTo("replacement add");
     }
 
     @Test
     public void testClear() {
-        addStringToBuffer("replacement");
+        keysBuffer.submitString("replacement");
 
         keysBuffer.clear();
 
@@ -146,20 +150,14 @@ public class KeysBufferTest {
 
     @Test
     public void shouldMatchApproiximateWoords() {
-        addStringToBuffer("choKo ");
-        assertThat(keysBuffer.containsIgnoreCase(singleton(new ForbiddenPhrase("choco")))).isTrue();
+        keysBuffer.submitString("choKo ");
+        assertTrue(matcher.matches(keysBuffer, singleton(new ForbiddenPhrase("choco"))));
 
-        addStringToBuffer("croissanst");
-        assertThat(keysBuffer.containsIgnoreCase(singleton(new ForbiddenPhrase("croissants")))).isTrue();
-        assertThat(keysBuffer.containsIgnoreCase(singleton(new ForbiddenPhrase("decroissants")))).isFalse();
+        keysBuffer.submitString("croissanst");
+        assertTrue(matcher.matches(keysBuffer, singleton(new ForbiddenPhrase("croissants"))));
+        assertFalse(matcher.matches(keysBuffer, singleton(new ForbiddenPhrase("decroissants"))));
     }
 
-
-    private void addStringToBuffer(String str) {
-        for (char c : str.toCharArray()) {
-            keysBuffer.submitChar(c);
-        }
-    }
 
     private void addNChars(int n) {
         IntStream.range(0, n)
@@ -209,6 +207,4 @@ public class KeysBufferTest {
         return NativeKeyEvent.class.getField("VC_" + strToAdd);
 
     }
-
-
 }

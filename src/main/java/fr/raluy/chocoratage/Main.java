@@ -1,19 +1,18 @@
 package fr.raluy.chocoratage;
 
+import com.github.kwhat.jnativehook.GlobalScreen;
 import fr.raluy.chocoratage.locking.SessionLocker;
-import org.jnativehook.GlobalScreen;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.logging.Level;
 
 public class Main {
     private static final Logger log = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String... args) throws IOException, URISyntaxException {
+    public static void main(String... args) throws IOException {
         configureJNativeHookLogger();
 
         Config.parse(args);
@@ -29,7 +28,7 @@ public class Main {
 
         if (Config.isDebugMode()) {
             log.info("OS set to {}", os);
-            log.info("Forbidden phrases:");
+            log.info("Forbidden phrases:", os);
             Config.getForbiddenPhrases().forEach(fph -> log.info("* {}", fph.getPhraseLower()));
         }
 

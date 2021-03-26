@@ -1,20 +1,10 @@
 package fr.raluy.chocoratage;
 
-import org.slf4j.LoggerFactory;
-
-import java.awt.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.stream.IntStream;
 
 public class Utils {
-  private static final org.slf4j.Logger log = LoggerFactory.getLogger(Utils.class);
 
   public static String trimToNull(String s) {
     String result = null;
