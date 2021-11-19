@@ -19,7 +19,6 @@ public class KeyLogger implements NativeKeyListener {
     public KeyLogger() {
         try {
             GlobalScreen.registerNativeHook();
-            //GlobalScreen.setEventDispatcher(new DefaultDispatchService()); // https://github.com/kwhat/jnativehook/issues/277
             GlobalScreen.addNativeKeyListener(this);
         } catch (NativeHookException e) {
             String errMsg = "Impossible to register listening hook";
