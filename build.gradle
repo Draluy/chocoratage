@@ -21,14 +21,11 @@ repositories {
         dirs 'libs'
     }
     mavenCentral()
-    maven {
-        url "https://oss.sonatype.org/service/local/repositories/snapshots/content/"
-    }
     mavenLocal()
 }
 
 dependencies {
-    compile 'com.github.kwhat:jnativehook:2.2-SNAPSHOT'// snap due to https://github.com/kwhat/jnativehook/issues/170 still open as of 2021-02-28
+    compile 'com.github.kwhat:jnativehook:2.2.1'
     compile 'com.ibm.icu:icu4j:68.2'
     compile 'org.slf4j:slf4j-api:1.7.29'
     compile 'org.slf4j:slf4j-simple:1.7.29'
@@ -49,7 +46,7 @@ jar {
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
-    jar.archiveName = 'chocoratage.jar'
+    jar.archiveFileName = 'chocoratage.jar'
 }
 
 task copyLangSelImg(type: Copy) {
